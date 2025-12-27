@@ -1,0 +1,9 @@
+[submodule "submodule/field-reflection"]
+	path = submodule/field-reflection
+	url = https://github.com/yosh-matsuda/field-reflection
+[submodule "submodule/reflect-cpp"]
+	path = submodule/reflect-cpp
+	url = https://github.com/getml/reflect-cpp
+[submodule "submodule/magic_enum"]
+	path = submodule/magic_enum
+	url = https://github.com/Neargye/magic_enum
