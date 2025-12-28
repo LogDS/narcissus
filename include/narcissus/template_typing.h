@@ -155,7 +155,25 @@ template<typename T>
   struct remove_arg<std::weak_ptr<T>>
 { using type = T; };
 
+template<typename T>
+struct remove_all_pointers : std::conditional_t<
+    std::is_pointer_v<T>,
+    remove_all_pointers<
+        std::remove_pointer_t<T>
+    >,
+    std::type_identity<T>
+>
+{};
 
+template<typename T>
+using remove_all_pointers_t = typename remove_all_pointers<T>::type;
+
+template<typename T, typename Enable = void>
+struct is_actual_pointer : std::false_type {};
+
+template<typename T>
+struct is_actual_pointer<T, typename std::enable_if<!std::is_same<std::remove_cvref_t<T>, typename remove_all_pointers<std::remove_cvref_t<T>>::type>::value || std::is_pointer<std::remove_cvref_t<T>>::value
+                                                    >::type> : std::true_type {};
 
 // #include <narcissus/reflection/field.h>
 // #include <field_reflection.hpp>

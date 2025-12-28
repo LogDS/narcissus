@@ -43,6 +43,10 @@ public:
              uint64_t bounded_array_size = 0,
              uint64_t size_ = 0);
 
+    lightweight_any any_value(const lightweight_any&x) const override{
+        return actual_val.get()->any_value(x);
+    }
+
     /**
      *
      * @return Provides the reflection for the underlying type

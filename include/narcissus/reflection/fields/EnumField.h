@@ -76,7 +76,7 @@ public:
     /*template <typename T>*/ std::string toString(const lightweight_any& value) const {
         // static_assert(std::is_enum_v<T>);
         // long long val = static_cast<long long>(std::to_underlying(value));
-        int64_t val = to_underlying(value);
+        int64_t val = *(int64_t*)value.raw();
         auto it = underlying_type_to_index.find(val);
         if (it != underlying_type_to_index.end())
             return std::string(case_names[it->second]);

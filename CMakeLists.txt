@@ -1,5 +1,14 @@
 cmake_minimum_required(VERSION 4.0.3)
 project(narcissus)
+Include(FetchContent)
+
+FetchContent_Declare(
+        Catch2
+        GIT_REPOSITORY https://github.com/catchorg/Catch2.git
+        GIT_TAG        v3.11.0 # or a later release
+)
+
+FetchContent_MakeAvailable(Catch2)
 
 set(CMAKE_CXX_STANDARD 26)
 
@@ -20,8 +29,7 @@ include_directories(include)
 include_directories(submodule/field-reflection/include)
 include_directories(submodule/magic_enum/include)
 
-add_executable(reflection main.cpp
-        include/narcissus/gsm/gsm.h
+add_library(narcissus         include/narcissus/gsm/gsm.h
         include/narcissus/template_typing.h
         include/narcissus/reflection/ReflectionManagerData.h
         src/narcissus/reflection/ReflectionManagerData.cpp
@@ -42,4 +50,9 @@ add_executable(reflection main.cpp
         src/narcissus/reflection/fields/ArrayField.cpp
         include/narcissus/lightweight_any.h
         src/narcissus/lightweight_any.cpp)
-target_link_libraries(reflection PRIVATE reflectcpp) # Link against the library
+
+add_executable(reflection main.cpp)
+target_link_libraries(reflection PRIVATE narcissus) # Link against the library
+
+add_executable(tests tests/basic_tests.cpp)
+target_link_libraries(tests PRIVATE Catch2::Catch2WithMain narcissus)

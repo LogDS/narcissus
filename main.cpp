@@ -18,19 +18,20 @@
 
 #include <iostream>
 
-#include "submodule/field-reflection/include/field_reflection.hpp"
+// #include "submodule/field-reflection/include/field_reflection.hpp"
 
 #include <functional>
 #include <any>
 #include <memory>
 
-#define MAGIC_ENUM_AUTO_IS_FLAGS
-#include "narcissus/reflection/Reflection.h"
-#include "narcissus/reflection/ReflectionManager.h"
-#include "narcissus/reflection/fields/EnumField.h"
-#include "submodule/magic_enum/include/magic_enum/magic_enum.hpp"
+// #define MAGIC_ENUM_AUTO_IS_FLAGS
+#include <narcissus/reflection/Reflection.h>
+#include <narcissus/reflection/ReflectionManager.h>
+#include <narcissus/reflection/fields/EnumField.h>
+#include <narcissus/reflection/fields/PtrField.h>
+// #include "submodule/magic_enum/include/magic_enum/magic_enum.hpp"
 
-enum class testing_enum  {
+enum class testing_enum : int64_t {
     A_VAL = -20,
     B_VAL = -30,
     C_VAL = 0,
@@ -65,7 +66,7 @@ int main() {
     tv.bounded_array = {0,1,2,3,4,5,6,7,8,123.5};
     tv.tup_tup = {1, 123.987, "mondo"};
     tv.self = &tv;
-    tv.var_elem = "capovaro_riripossovarare?";
+    tv.var_elem = "capovaro_ririprovo?"; // https://www.youtube.com/watch?v=bsm1U2NWjhI&t=112s
     tv.other.value = 10.0;
     tv.other.self = &tv.other;
     tv.other.othero = std::make_shared<other_elements>();
@@ -83,16 +84,16 @@ int main() {
         ref.value = 2;
     }
 
-    std::any any_test{&tv};
-    std::cout << std::get<std::string>(std::any_cast<testing*>(any_test)->var_elem) << std::endl;
+    // std::any any_test{&tv};
+    // std::cout << std::get<std::string>(std::any_cast<testing*>(any_test)->var_elem) << std::endl;
 
     ReflectionManager manager;
     auto t = manager.reflection_from_type<testing>();
 
-    std::shared_ptr<remove_arg<std::shared_ptr<std::string>>::type> g{nullptr};
-    auto w = g;
-    std::array<int, 10> bounded_array;
-    int* val = bounded_array.data();
+    // std::shared_ptr<remove_arg<std::shared_ptr<std::string>>::type> g{nullptr};
+    // auto w = g;
+    // std::array<int, 10> bounded_array;
+    // int* val = bounded_array.data();
     // Reflection t = Reflection::from_type<testing>();
     std::cout << t->getName() << std::endl;
 
@@ -101,19 +102,21 @@ int main() {
     // std::cout << std::any_cast<std::string>(t->getField("element")->any_value(tv)) << std::endl;
     auto for_enum = (EnumField*)t->getField("values");
     std::cout << for_enum->toString(testing_enum::C_VAL) << std::endl;
+    auto dis = t->getField<testing_enum>("values", &tv);
     {
-        auto tv_ptr = t->getField<testing*>("self", &tv);
+        auto for_ptr = (PtrField*)t->getField("self");
+        auto tv_ptr = t->getField<testing>("self", &tv);
         auto other_field = t->getField("other");
         std::cout << other_field->get_field_name() << std::endl;
         auto other_other = other_field->asReflection()->getField("othero");
         std::cout << other_other->get_field_name() << std::endl;
-        auto resulto = other_other->value<other_elements*>(&tv.other);
+        auto resulto = other_other->value<other_elements>(&tv.other);
     }
 
     {
         auto ptr = (ArrayField*)t->getField("bounded_array");
         for (uint64_t idx = 0, N = ptr->size_if_bounded_array(); idx < N; idx++) {
-            std::cout << ptr->at(idx)->value<double>(&tv) << std::endl;
+            std::cout << *ptr->at(idx)->value<double>(&tv) << std::endl;
         }
     }
 
@@ -127,6 +130,7 @@ int main() {
     }
 
     auto tup = t->getField("tup_tup");
+
     auto tup_refl = tup->asReflection()->getField("tuple_field_0")->value<int>(&tv.tup_tup);
     auto tup_refl2 = tup->asReflection()->getField("tuple_field_1")->value<double>(&tv.tup_tup);
     auto tup_refl3 = tup->asReflection()->getField("tuple_field_2")->value<std::string>(&tv.tup_tup);
@@ -134,7 +138,7 @@ int main() {
     // auto t_other = ((PtrField*)t->getField("self"))->getOriginalField()->asReflection()->getField("element");
 
     auto var = t->getField("var_elem");
-    std::cout << var->value<std::string>(&tv) << std::endl;
+    std::cout << *var->value<std::string>(&tv) << std::endl;
 
     return 0;
     // TIP See CLion help at <a href="https://www.jetbrains.com/help/clion/">jetbrains.com/help/clion/</a>. Also, you can try interactive lessons for CLion by selecting 'Help | Learn IDE Features' from the main menu.
