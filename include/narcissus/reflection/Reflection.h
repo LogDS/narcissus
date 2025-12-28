@@ -268,6 +268,14 @@ struct static_for
         result.emplace_back(flatten_type_to_enum<std::tuple_element<x,T>>(x, "tuple_field_"+std::to_string(x), (f)));
         return result;
     }
+    std::vector<std::unique_ptr<Field>> variant_enum() {
+        auto result = static_for<T, x+1,to>().variant_enum();
+        std::function<std::any(const std::any&)> f = [](const std::any& val) {
+            return std::get<x>(std::any_cast<T>(val));
+        };
+        result.emplace_back(flatten_type_to_enum<std::variant_alternative_t<x,T>>(x, "variant_tag_"+std::to_string(x), (f)));
+        return result;
+    }
     std::vector<std::unique_ptr<Field>> field_enum() {
         auto result = static_for<T, x+1,to>().field_enum();
         std::function<std::any(const std::any&)> f = [](const std::any& val) {
@@ -282,6 +290,9 @@ template<typename T, int to>
 struct static_for<T, to,to>
 {
     std::vector<std::unique_ptr<Field>> tuple_enum() {
+        return {};
+    }
+    std::vector<std::unique_ptr<Field>> variant_enum() {
         return {};
     }
 
@@ -308,14 +319,12 @@ std::unique_ptr<Reflection> Reflection::from_type(Field *field_orig) {
             return ss.str();
         };
     }
-    // else {
-    //     f = [](const std::any& x) {
-    //         return std::to_string(std::any_cast<T>(x));
-    //     };
-    // }
     std::vector<std::unique_ptr<Field>> fields;
     if constexpr (is_tuple<T>::value) {
         fields = static_for<T, 0,  std::tuple_size_v<T>>{}.tuple_enum();
+        std::reverse(fields.begin(), fields.end());
+    } else if constexpr (is_variant<T>::value) {
+        fields = static_for<T, 0,  std::variant_size_v<T>>{}.variant_enum();
         std::reverse(fields.begin(), fields.end());
     } else if constexpr (std::is_class_v<T> && (!is_smart_pointer<T>::value) && (!std::is_same_v<T, std::string>) && (!is_vector<T>::value) && (!is_list<T>::value) && (!is_deque<T>::value) && (!is_stack<T>::value) && (!is_queue<T>::value) && (!is_map<T>::value) && (!is_unordered_map<T>::value)) {
         fields  = static_for<T, 0, field_reflection::field_count<T>>{}.field_enum();

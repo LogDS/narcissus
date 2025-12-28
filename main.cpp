@@ -31,10 +31,6 @@
 #include <stack>
 #include <typeindex>
 
-
-
-
-
 #define MAGIC_ENUM_AUTO_IS_FLAGS
 #include "narcissus/reflection/Reflection.h"
 #include "narcissus/reflection/ReflectionManager.h"
@@ -60,6 +56,7 @@ struct testing {
     testing_enum values;
     testing* self;
     std::tuple<int, double, std::string> tup_tup;
+    std::variant<float, std::string, bool> var_elem;
     std::list<testing> children;
     other_elements other;
     std::array<double, 10> bounded_array;
@@ -73,6 +70,7 @@ int main() {
     tv.bounded_array = {0,1,2,3,4,5,6,7,8,123.5};
     tv.tup_tup = {1, 123.987, "mondo"};
     tv.self = &tv;
+    tv.var_elem = "capovaro_riripossovarare?";
     tv.other.value = 10.0;
     tv.other.self = &tv.other;
     tv.other.othero = std::make_shared<other_elements>();
@@ -137,7 +135,8 @@ int main() {
     // ((PtrField*)t->getField("self"))->any_value
     // auto t_other = ((PtrField*)t->getField("self"))->getOriginalField()->asReflection()->getField("element");
 
-
+    auto var = t->getField("var_elem");
+    std::cout << var->value<std::string>(tv) << std::endl;
 
     return 0;
     // TIP See CLion help at <a href="https://www.jetbrains.com/help/clion/">jetbrains.com/help/clion/</a>. Also, you can try interactive lessons for CLion by selecting 'Help | Learn IDE Features' from the main menu.
