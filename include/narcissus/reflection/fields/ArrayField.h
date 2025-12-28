@@ -29,7 +29,7 @@ class ArrayField : public Field {
     std::function<std::unique_ptr<Field>(const uint64_t)> selector;
 public:
     ArrayField(const std::type_index &val_t, std::function<std::unique_ptr<Field>(const uint64_t)> &&actual_val, uint64_t val,
-        const std::string& name, std::function<std::any(const std::any &)> getter, type_cases cases_,
+        const std::string& name, std::function<lightweight_any(const lightweight_any &)> getter, type_cases cases_,
         uint64_t bounded_array_size, uint64_t size_):     Field(val_t, val, name, getter, cases_, bounded_array_size, size_), selector(std::move(actual_val)) {}
 
 

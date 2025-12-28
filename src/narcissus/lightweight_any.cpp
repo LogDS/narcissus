@@ -1,4 +1,4 @@
-// PtrField.cpp
+// lightweight_any.cpp
 // This file is part of narcissus
 //
 // Copyright (C)  2025 - gyankos
@@ -17,11 +17,17 @@
 //  along with narcissus. If not, see <http://www.gnu.org/licenses/>.
 
 //
-// Created by gyankos on 27/12/25.
+// Created by gyankos on 28/12/25.
 //
 
-#include <narcissus/reflection/fields/PtrField.h>
+#include <narcissus/lightweight_any.h>
 
-PtrField::PtrField(const std::type_index &val_t, std::unique_ptr<Field> &&actual_val, uint64_t val,
-    const std::string& name, std::function<lightweight_any(const lightweight_any &)> getter, type_cases cases_,
-    uint64_t bounded_array_size, uint64_t size_):     Field(val_t, val, name, getter, cases_, bounded_array_size, size_), actual_val(std::move(actual_val)) {}
+void * lightweight_any::raw() {
+    return ptr;
+}
+
+void * lightweight_any::raw() const {
+    return ptr;
+}
+
+lightweight_any::lightweight_any(): idx(typeid(nullptr_t)), ptr{nullptr} {}
