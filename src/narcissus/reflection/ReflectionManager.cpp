@@ -43,7 +43,7 @@ Field * ReflectionManager::field_from_type_index(const std::type_index &x) {
     return it->second.as_field.get();
 }
 
-Reflection * ReflectionManager::reflection_from_name(const std::string_view &sv) {
+Reflection * ReflectionManager::reflection_from_name(const std::string &sv) {
     auto it = name_to_index.find(std::string(sv));
     if (it == name_to_index.end())
         return nullptr;

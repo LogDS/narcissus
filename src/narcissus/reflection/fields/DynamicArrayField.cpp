@@ -1,4 +1,4 @@
-// type_cases.h
+// ArrayField.cpp
 // This file is part of narcissus
 //
 // Copyright (C)  2025 - gyankos
@@ -20,26 +20,4 @@
 // Created by gyankos on 27/12/25.
 //
 
-#ifndef NARCISSUS_TYPE_CASES_H
-#define NARCISSUS_TYPE_CASES_H
-
-enum type_cases {
-    T_VOID,
-    T_NULLPTR,
-    T_SIGNED_INTEGRAL,
-    T_U_INTEGRAL,
-    T_SIGNED_FLOAT,
-    T_U_FLOAT,
-    T_STATIC_ARRAY,
-    T_OTHER_ARRAY,
-    T_ENUM,
-    T_UNION,
-    T_CLASS,
-    T_FUNCTION,
-    T_POINTER,
-    T_STRING,
-    T_TUPLE,
-    T_UNEXPECTED,
-};
-
-#endif //NARCISSUS_TYPE_CASES_H
+#include <narcissus/reflection/fields/DynamicArrayField.h>

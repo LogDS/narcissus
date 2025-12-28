@@ -37,7 +37,7 @@ public:
     PtrField(const std::type_index &val_t,
              std::unique_ptr<Field> &&actual_val,
              uint64_t val,
-             std::string_view name,
+             const std::string& name,
              std::function<std::any(const std::any &)> getter,
              type_cases cases_ = T_UNEXPECTED,
              uint64_t bounded_array_size = 0,
