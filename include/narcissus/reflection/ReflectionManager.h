@@ -70,7 +70,7 @@ template<typename _Tp> ReflectionManagerData* ReflectionManager::reflection_reco
         it->second.name = std::string(field_reflection::type_name<_Tp>);
         assert(!name_to_index.contains(it->second.name));
         name_to_index.emplace(it->second.name, info);
-        it->second.as_field = flatten_type_to_enum<_Tp>(-1, std::string(field_reflection::type_name<_Tp>), [](const std::any& x) {return x;});
+        it->second.as_field = flatten_type_to_enum<_Tp>(-1, std::string(field_reflection::type_name<_Tp>), [](const lightweight_any& x) {return x;});
         it->second.reflection = Reflection::from_type<_Tp>(it->second.as_field.get());
     }
     return &it->second;

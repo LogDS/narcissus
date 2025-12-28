@@ -23,7 +23,7 @@
 #ifndef NARCISSUS_FIELD_H
 #define NARCISSUS_FIELD_H
 
-#include <any>
+#include <narcissus/lightweight_any.h>
 #include <cinttypes>
 #include <functional>
 #include <string_view>
@@ -32,18 +32,20 @@
 
 #include <narcissus/reflection/type_cases.h>
 
+
+
 class Reflection;
 
 class   Field {
     uint64_t idx, size_;
     std::string name;
-    std::function<std::any(const std::any&)> getobj;
+    std::function<lightweight_any(const lightweight_any&)> getobj;
     type_cases case_;
     uint64_t bounded_array_size;
     std::type_index val_t;
 
 public:
-    Field(const std::type_index& val_t, uint64_t val, const std::string& name, std::function<std::any(const std::any&)> getter, type_cases cases_ = T_UNEXPECTED, uint64_t bounded_array_size = 0, uint64_t size_ = 0) : val_t{val_t},
+    Field(const std::type_index& val_t, uint64_t val, const std::string& name, std::function<lightweight_any(const lightweight_any&)> getter, type_cases cases_ = T_UNEXPECTED, uint64_t bounded_array_size = 0, uint64_t size_ = 0) : val_t{val_t},
     idx{val}, size_(size_), name{name}, getobj(getter), case_(cases_), bounded_array_size(bounded_array_size) {}
 
     virtual ~Field() = default;
@@ -53,11 +55,11 @@ public:
     uint64_t index() const {
         return idx;
     }
-    virtual std::any any_value(const std::any&x) const {
+    virtual lightweight_any any_value(const lightweight_any&x) const {
         return getobj(x);
     }
-    template <typename K> K value(const std::any&x) const {
-        return std::any_cast<K>(any_value(x));
+    template <typename K> K* value(const lightweight_any&x) const {
+        return any_value(x).get<K>();
     }
     const std::string_view get_field_name() const {
         return name;

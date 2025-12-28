@@ -28,7 +28,7 @@
 class PtrField : public Field {
     // uint64_t idx, size_;
     // std::string_view name;
-    // std::function<std::any(const std::any &)> getobj;
+    // std::function<std::any(const lightweight_any &)> getobj;
     // type_cases case_;
     // uint64_t bounded_array_size;
     std::unique_ptr<Field> actual_val;
@@ -38,7 +38,7 @@ public:
              std::unique_ptr<Field> &&actual_val,
              uint64_t val,
              const std::string& name,
-             std::function<std::any(const std::any &)> getter,
+             std::function<lightweight_any(const lightweight_any &)> getter,
              type_cases cases_ = T_UNEXPECTED,
              uint64_t bounded_array_size = 0,
              uint64_t size_ = 0);

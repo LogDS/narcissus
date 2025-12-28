@@ -35,14 +35,14 @@ class EnumField : public Field {
     std::vector<long long> case_to_underlying_type;
     std::unordered_map<long long, uint64_t> underlying_type_to_index;
     std::unordered_map<std::string, uint64_t> case_name_to_index;
-    std::function<int64_t(const std::any&)> to_underlying;
+    std::function<int64_t(const lightweight_any&)> to_underlying;
 public:
 
     EnumField(const std::type_index& val_t, uint64_t val,
         const std::string& name,
         const std::vector<std::pair<std::string, long long>>& values,
-        std::function<std::any(const std::any&)> getter,
-        std::function<int64_t(const std::any&)>&& to_underlying,
+        std::function<lightweight_any(const lightweight_any&)> getter,
+        std::function<int64_t(const lightweight_any&)>&& to_underlying,
         type_cases cases_ = T_UNEXPECTED) : Field(val_t, val, name, (getter), cases_, values.size(),  0), to_underlying{std::move(to_underlying)} {
         for (uint64_t idx = 0, N = values.size(); idx < N; ++idx) {
             case_name_to_index[values[idx].first] = idx;
@@ -56,7 +56,7 @@ public:
         return case_names.size();
     }
 
-    /*template <typename T>*/ uint64_t toIndex(std::any value) const {
+    /*template <typename T>*/ uint64_t toIndex(const lightweight_any& value) const {
         // static_assert(std::is_enum_v<T>);
         int64_t val = to_underlying(value);
         auto it = underlying_type_to_index.find(val);
@@ -73,7 +73,7 @@ public:
     /**
      * Given a raw value associated with the original type, this returns the string representation associated with the enumerated value
      */
-    /*template <typename T>*/ std::string toString(std::any value) const {
+    /*template <typename T>*/ std::string toString(const lightweight_any& value) const {
         // static_assert(std::is_enum_v<T>);
         // long long val = static_cast<long long>(std::to_underlying(value));
         int64_t val = to_underlying(value);

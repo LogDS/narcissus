@@ -28,26 +28,26 @@
 class VariantField : public Field {
     // uint64_t idx, size_;
     // std::string_view name;
-    // std::function<std::any(const std::any &)> getobj;
+    // std::function<std::any(const lightweight_any &)> getobj;
     // type_cases case_;
     // uint64_t bounded_array_size;
-    std::function<uint64_t(const std::any&)> idx_selector;
+    std::function<uint64_t(const lightweight_any&)> idx_selector;
 
 public:
     VariantField(const std::type_index &val_t,
-             std::function<uint64_t(const std::any&)> &&idx_selector,
+             std::function<uint64_t(const lightweight_any&)> &&idx_selector,
              uint64_t val,
              const std::string& name,
-             std::function<std::any(const std::any &)> getter,
+             std::function<lightweight_any(const lightweight_any &)> getter,
              type_cases cases_ = T_UNEXPECTED,
              uint64_t bounded_array_size = 0,
              uint64_t size_ = 0);
 
-    uint64_t get_idx(const std::any &val) const {
+    uint64_t get_idx(const lightweight_any &val) const {
         return idx_selector(val);
     }
 
-    std::any any_value(const std::any&x) const override;
+    lightweight_any any_value(const lightweight_any&x) const override;
 };
 
 #endif //NARCISSUS_PTRFIELD_H

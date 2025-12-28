@@ -33,7 +33,7 @@
 // #include <narcissus/reflection/fields/Field.h>
 
 class Field;
-#include <any>
+#include <narcissus/lightweight_any.h>
 #include <functional>
 
 // #include "ReflectionManager.h"
@@ -46,21 +46,21 @@ class Reflection {
     std::vector<std::unique_ptr<Field>> fields;
     std::unordered_map<std::string, uint64_t> field_map;
     Field* self;
-    std::function<std::string(const std::any&)> string_stream;
-    std::function<void*(const std::any&)> void_ptr;
+    std::function<std::string(const lightweight_any&)> string_stream;
+    std::function<void*(const lightweight_any&)> void_ptr;
     bool isEnumerated, streamable;
 
 public:
     Reflection(Field* self,
            std::vector<std::unique_ptr<Field>>&& fields,
            bool is_streamable,
-           std::function<std::string(const std::any&)>&& string_stream,
+           std::function<std::string(const lightweight_any&)>&& string_stream,
            bool isEnumerated,
-           std::function<void*(const std::any&)>&& as_void_pointer);
+           std::function<void*(const lightweight_any&)>&& as_void_pointer);
 
     template<typename T> static std::unique_ptr<Reflection> from_type(Field* field_orig);
 
-    template <typename K> K getField(const std::string& name, const std::any& val);
+    template <typename K> K* getField(const std::string& name, const lightweight_any& val);
 
     const std::string_view getName();
 
@@ -83,7 +83,7 @@ public:
     uint64_t size_if_bounded_array() const;
 
 #ifdef GSM
-    std::string toString(const std::any& obj, bool c_default_repr) {
+    std::string toString(const lightweight_any& obj, bool c_default_repr) {
         switch (self->type()) {
             case T_VOID:
                 return "void";
@@ -148,7 +148,7 @@ public:
         throw std::runtime_error("Unsigned floats were not currently supported");
     }
 
-    void fromObject(const std::any& obj, std::unordered_map<uint64_t, GSMObject>& result_map) {
+    void fromObject(const lightweight_any& obj, std::unordered_map<uint64_t, GSMObject>& result_map) {
         if (!obj.has_value())
             return;
         auto ptr_id = (uint64_t)void_ptr(obj);
@@ -262,24 +262,24 @@ struct static_for
 {
     std::vector<std::unique_ptr<Field>> tuple_enum() {
         auto result = static_for<T, x+1,to>().tuple_enum();
-        std::function<std::any(const std::any&)> f = [](const std::any& val) {
-            return std::get<x>(std::any_cast<T>(val));
+        std::function<lightweight_any(const lightweight_any&)> f = [](const lightweight_any& val) {
+            return &std::get<x>(*val.get<T>());
         };
         result.emplace_back(flatten_type_to_enum<std::tuple_element<x,T>>(x, "tuple_field_"+std::to_string(x), (f)));
         return result;
     }
     std::vector<std::unique_ptr<Field>> variant_enum() {
         auto result = static_for<T, x+1,to>().variant_enum();
-        std::function<std::any(const std::any&)> f = [](const std::any& val) {
-            return std::get<x>(std::any_cast<T>(val));
+        std::function<lightweight_any(const lightweight_any&)> f = [](const lightweight_any& val) {
+            return &std::get<x>(*val.get<T>());
         };
         result.emplace_back(flatten_type_to_enum<std::variant_alternative_t<x,T>>(x, "variant_tag_"+std::to_string(x), (f)));
         return result;
     }
     std::vector<std::unique_ptr<Field>> field_enum() {
         auto result = static_for<T, x+1,to>().field_enum();
-        std::function<std::any(const std::any&)> f = [](const std::any& val) {
-            return field_reflection::get_field<x>(std::any_cast<T>(val));
+        std::function<lightweight_any(const lightweight_any&)> f = [](const lightweight_any& val) {
+            return &field_reflection::get_field<x>(*val.get<T>());
         };
         result.emplace_back(flatten_type_to_enum<field_reflection::field_type<T, x>>(x, std::string(field_reflection::field_name<T, x>), (f)));
         return result;
@@ -305,17 +305,17 @@ struct static_for<T, to,to>
 
 template<typename T>
 std::unique_ptr<Reflection> Reflection::from_type(Field *field_orig) {
-    std::function<std::string(const std::any&)> f = [](const std::any&){ return std::string(""); };
-    std::function<void*(const std::any&)> as_void_pointer = [](const std::any& val) {
-        const auto& x = std::any_cast<const T&>(val);
-        return (void*)&x;
+    std::function<std::string(const lightweight_any&)> f = [](const lightweight_any&){ return std::string(""); };
+    std::function<void*(const lightweight_any&)> as_void_pointer = [](const lightweight_any& val) {
+        // const auto& x = std::any_cast<const T&>(val);
+        return (void*)val.raw();
     };
     bool streamable = false;
     if constexpr (is_streamable<T>::value) {
         streamable = true;
-        f = [](const std::any& x) {
+        f = [](const lightweight_any& x) {
             std::stringstream ss;
-            ss << std::any_cast<T>(&x);
+            ss << x.get<T>();
             return ss.str();
         };
     }
@@ -334,7 +334,7 @@ std::unique_ptr<Reflection> Reflection::from_type(Field *field_orig) {
     return std::make_unique<Reflection>(field_orig, std::move(fields), streamable, std::move(f), isEnumerated, std::move(as_void_pointer));
 }
 
-template <typename K> K Reflection::getField(const std::string& name, const std::any& val) {
+template <typename K> K* Reflection::getField(const std::string& name, const lightweight_any& val) {
     auto f = getField(name);
     if (f == nullptr)
         throw std::runtime_error("Missing field: "+name);

@@ -24,8 +24,8 @@
 #include <narcissus/reflection/fields/Field.h>
 
 Reflection::Reflection(Field *self, std::vector<std::unique_ptr<Field>> &&fields, bool is_streamable,
-    std::function<std::string(const std::any &)> &&string_stream, bool isEnumerated,
-    std::function<void *(const std::any &)> &&as_void_pointer): void_ptr{std::move(as_void_pointer)}, streamable{is_streamable},  self{self}, fields{std::move(fields)}, isEnumerated{isEnumerated}, string_stream{std::move(string_stream)} {
+    std::function<std::string(const lightweight_any &)> &&string_stream, bool isEnumerated,
+    std::function<void *(const lightweight_any &)> &&as_void_pointer): void_ptr{std::move(as_void_pointer)}, streamable{is_streamable},  self{self}, fields{std::move(fields)}, isEnumerated{isEnumerated}, string_stream{std::move(string_stream)} {
     for (uint64_t i = 0; i < this->fields.size(); ++i) {
         const auto name = std::string(this->fields[i]->get_field_name());
         field_map[name] = i;

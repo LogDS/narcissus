@@ -20,16 +20,9 @@
 
 #include "submodule/field-reflection/include/field_reflection.hpp"
 
-#include <iostream>
-#include <unordered_map>
-#include <utility>
-#include <vector>
 #include <functional>
 #include <any>
 #include <memory>
-#include <queue>
-#include <stack>
-#include <typeindex>
 
 #define MAGIC_ENUM_AUTO_IS_FLAGS
 #include "narcissus/reflection/Reflection.h"
@@ -64,6 +57,8 @@ struct testing {
     // int things[];
 };
 
+
+
 // TIP To <b>Run</b> code, press <shortcut actionId="Run"/> or click the <icon src="AllIcons.Actions.Execute"/> icon in the gutter.
 int main() {
     testing tv{"ciao mondo", 123, testing_enum::B_VAL};
@@ -88,6 +83,9 @@ int main() {
         ref.value = 2;
     }
 
+    std::any any_test{&tv};
+    std::cout << std::get<std::string>(std::any_cast<testing*>(any_test)->var_elem) << std::endl;
+
     ReflectionManager manager;
     auto t = manager.reflection_from_type<testing>();
 
@@ -98,45 +96,45 @@ int main() {
     // Reflection t = Reflection::from_type<testing>();
     std::cout << t->getName() << std::endl;
 
-    std::cout << t->getField<std::string>("element", tv) << std::endl;
+    std::cout << *t->getField<std::string>("element", &tv) << std::endl;
 
     // std::cout << std::any_cast<std::string>(t->getField("element")->any_value(tv)) << std::endl;
     auto for_enum = (EnumField*)t->getField("values");
     std::cout << for_enum->toString(testing_enum::C_VAL) << std::endl;
     {
-        auto tv_ptr = t->getField<testing*>("self", tv);
+        auto tv_ptr = t->getField<testing*>("self", &tv);
         auto other_field = t->getField("other");
         std::cout << other_field->get_field_name() << std::endl;
         auto other_other = other_field->asReflection()->getField("othero");
         std::cout << other_other->get_field_name() << std::endl;
-        auto resulto = other_other->value<other_elements*>(tv.other);
+        auto resulto = other_other->value<other_elements*>(&tv.other);
     }
 
     {
         auto ptr = (ArrayField*)t->getField("bounded_array");
         for (uint64_t idx = 0, N = ptr->size_if_bounded_array(); idx < N; idx++) {
-            std::cout << ptr->at(idx)->value<double>(tv) << std::endl;
+            std::cout << ptr->at(idx)->value<double>(&tv) << std::endl;
         }
     }
 
     {
         auto ptr = (DynamicArrayField*)t->getField("children");
-        for (uint64_t idx = 0, N = ptr->dynamic_size(tv); idx < N; idx++) {
+        for (uint64_t idx = 0, N = ptr->dynamic_size(&tv); idx < N; idx++) {
             auto field_ptr = ptr->at(idx);
-            auto val = field_ptr->value<testing>(tv);
+            auto val = field_ptr->value<testing>(&tv);
             std::cout << field_ptr->get_field_name() << std::endl;
         }
     }
 
     auto tup = t->getField("tup_tup");
-    auto tup_refl = tup->asReflection()->getField("tuple_field_0")->value<int>(tv.tup_tup);
-    auto tup_refl2 = tup->asReflection()->getField("tuple_field_1")->value<double>(tv.tup_tup);
-    auto tup_refl3 = tup->asReflection()->getField("tuple_field_2")->value<std::string>(tv.tup_tup);
+    auto tup_refl = tup->asReflection()->getField("tuple_field_0")->value<int>(&tv.tup_tup);
+    auto tup_refl2 = tup->asReflection()->getField("tuple_field_1")->value<double>(&tv.tup_tup);
+    auto tup_refl3 = tup->asReflection()->getField("tuple_field_2")->value<std::string>(&tv.tup_tup);
     // ((PtrField*)t->getField("self"))->any_value
     // auto t_other = ((PtrField*)t->getField("self"))->getOriginalField()->asReflection()->getField("element");
 
     auto var = t->getField("var_elem");
-    std::cout << var->value<std::string>(tv) << std::endl;
+    std::cout << var->value<std::string>(&tv) << std::endl;
 
     return 0;
     // TIP See CLion help at <a href="https://www.jetbrains.com/help/clion/">jetbrains.com/help/clion/</a>. Also, you can try interactive lessons for CLion by selecting 'Help | Learn IDE Features' from the main menu.
