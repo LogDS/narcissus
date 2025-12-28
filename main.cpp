@@ -116,6 +116,9 @@ int main() {
     {
         auto ptr = (ArrayField*)t->getField("bounded_array");
         for (uint64_t idx = 0, N = ptr->size_if_bounded_array(); idx < N; idx++) {
+            *ptr->at(idx)->value<double>(&tv) = idx*20.0+1.0;
+        }
+        for (uint64_t idx = 0, N = ptr->size_if_bounded_array(); idx < N; idx++) {
             std::cout << *ptr->at(idx)->value<double>(&tv) << std::endl;
         }
     }

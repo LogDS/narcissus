@@ -179,4 +179,15 @@ TEST_CASE( "Factorials are computed", "[factorial]" ) {
             CHECK(*ptr->at(idx)->value<double>(&tv) == tv.bounded_array.at(idx));
         }
     }
+
+    SECTION("array: update")     {
+        auto ptr = (ArrayField*)t->getField("bounded_array");
+        for (uint64_t idx = 0, N = ptr->size_if_bounded_array(); idx < N; idx++) {
+            *ptr->at(idx)->value<double>(&tv) = idx*20.0+1.0;
+        }
+        for (uint64_t idx = 0, N = ptr->size_if_bounded_array(); idx < N; idx++) {
+            CHECK(*ptr->at(idx)->value<double>(&tv) == idx*20.0+1.0);
+            CHECK(*ptr->at(idx)->value<double>(&tv) == tv.bounded_array.at(idx)); // Updating the original data structure
+        }
+    }
 }

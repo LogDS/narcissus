@@ -89,7 +89,7 @@ template <typename T> std::unique_ptr<Field> flatten_type_to_enum(uint64_t val, 
         }
         std::function<std::unique_ptr<Field>(const uint64_t)> cell_getter = [val,name,getter](const uint64_t idx) {
             std::function<lightweight_any(const lightweight_any&)> intermediate = [getter,idx](const lightweight_any& val) {
-                return getter(val).get<T>()->at(idx);
+                return &getter(val).get<T>()->at(idx);
             };
             return flatten_type_to_enum<remove_arg<T>>(val, name+"["+std::to_string(idx)+"]", intermediate);
         };
