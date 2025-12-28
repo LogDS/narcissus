@@ -29,6 +29,7 @@
 #include <narcissus/reflection/fields/PtrField.h>
 #include <narcissus/reflection/fields/ArrayField.h>
 #include <narcissus/reflection/fields/DynamicArrayField.h>
+#include <narcissus/reflection/fields/VariantField.h>
 
 #include "ReflectionManager.h"
 #include <iostream>
@@ -140,6 +141,13 @@ template <typename T> std::unique_ptr<Field> flatten_type_to_enum(uint64_t val, 
             std::unique_ptr<Field> original_field = flatten_type_to_enum<T::element_type>(val, name, [neu_getter](const std::any& val) { return *std::any_cast<T*>(neu_getter(val));});
             return  std::make_unique<PtrField>(type_i, std::move(original_field), val, name, neu_getter,T_POINTER, 0, 0);
         }
+    }
+    else if constexpr (is_variant<T>::value) {
+        ReflectionManager::reflection_record_create<T>();
+        std::function<uint64_t(const std::any&)> f = [getter](const std::any& val) {
+            return std::any_cast<T>(getter(val)).index();
+        };
+        return  std::make_unique<VariantField>(type_i, std::move(f), val, name, getter,T_VARIANT, 0, 0);
     }
     else if constexpr (std::is_function_v<T>) {
         return  std::make_unique<Field>(type_i, val, name, getter,  T_FUNCTION, 0, 0);

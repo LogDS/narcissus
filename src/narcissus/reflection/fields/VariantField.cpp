@@ -1,4 +1,4 @@
-// type_cases.h
+// PtrField.cpp
 // This file is part of narcissus
 //
 // Copyright (C)  2025 - gyankos
@@ -20,27 +20,15 @@
 // Created by gyankos on 27/12/25.
 //
 
-#ifndef NARCISSUS_TYPE_CASES_H
-#define NARCISSUS_TYPE_CASES_H
+#include <narcissus/reflection/fields/VariantField.h>
 
-enum type_cases {
-    T_VOID,
-    T_NULLPTR,
-    T_SIGNED_INTEGRAL,
-    T_U_INTEGRAL,
-    T_SIGNED_FLOAT,
-    T_U_FLOAT,
-    T_STATIC_ARRAY,
-    T_OTHER_ARRAY,
-    T_ENUM,
-    T_UNION,
-    T_CLASS,
-    T_FUNCTION,
-    T_POINTER,
-    T_STRING,
-    T_TUPLE,
-    T_VARIANT,
-    T_UNEXPECTED,
-};
+VariantField::VariantField(const std::type_index &val_t, std::function<uint64_t(const std::any&)> &&idx_selector , uint64_t val,
+    const std::string& name, std::function<std::any(const std::any &)> getter, type_cases cases_,
+    uint64_t bounded_array_size, uint64_t size_):     Field(val_t, val, name, getter, cases_, bounded_array_size, size_), idx_selector(std::move(idx_selector)) {}
 
-#endif //NARCISSUS_TYPE_CASES_H
+#include <narcissus/reflection/Reflection.h>
+
+std::any VariantField::any_value(const std::any &x) const {
+    auto idx = get_idx(x);
+    return asReflection()->getField("variant_tag_"+std::to_string(idx))->any_value(Field::any_value(x));
+}
