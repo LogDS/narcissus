@@ -36,5 +36,7 @@ add_executable(reflection main.cpp
         src/narcissus/reflection/fields/EnumField.cpp
         include/narcissus/reflection/Reflection.h
         src/narcissus/reflection/Reflection.cpp
-        include/narcissus/reflection/flatten_type_to_enum.h)
+        include/narcissus/reflection/flatten_type_to_enum.h
+        include/narcissus/reflection/fields/ArrayField.h
+        src/narcissus/reflection/fields/ArrayField.cpp)
 target_link_libraries(reflection PRIVATE reflectcpp) # Link against the library

@@ -23,5 +23,5 @@
 #include <narcissus/reflection/fields/PtrField.h>
 
 PtrField::PtrField(const std::type_index &val_t, std::unique_ptr<Field> &&actual_val, uint64_t val,
-    std::string_view name, std::function<std::any(const std::any &)> getter, type_cases cases_,
+    const std::string& name, std::function<std::any(const std::any &)> getter, type_cases cases_,
     uint64_t bounded_array_size, uint64_t size_):     Field(val_t, val, name, getter, cases_, bounded_array_size, size_), actual_val(std::move(actual_val)) {}

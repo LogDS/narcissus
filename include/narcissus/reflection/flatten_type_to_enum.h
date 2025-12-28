@@ -27,15 +27,14 @@
 #include <magic_enum/magic_enum.hpp>
 #include <narcissus/reflection/fields/EnumField.h>
 #include <narcissus/reflection/fields/PtrField.h>
+#include <narcissus/reflection/fields/ArrayField.h>
+#include <narcissus/reflection/fields/DynamicArrayField.h>
 
 #include "ReflectionManager.h"
 #include <iostream>
 
-template <typename T> std::unique_ptr<Field> flatten_type_to_enum(uint64_t val, std::string_view name, std::function<std::any(const std::any&)> getter) {
+template <typename T> std::unique_ptr<Field> flatten_type_to_enum(uint64_t val, std::string name, std::function<std::any(const std::any&)> getter) {
     std::type_index type_i = std::type_index(typeid(T));
-    if (name == "othero") {
-        std::cout << name << std::endl;
-    }
     if constexpr (std::is_same_v<T, std::string>) {
         return std::make_unique<Field>(type_i, val, name, getter, T_STRING, 0, 0);
     }
@@ -59,7 +58,40 @@ template <typename T> std::unique_ptr<Field> flatten_type_to_enum(uint64_t val, 
             return  std::make_unique<Field>(type_i, val, name, getter,  T_U_FLOAT, 0, sizeof(T));
         }
     }
+    else if constexpr (is_std_array<T>::value) {
+        std::function<std::unique_ptr<Field>(const uint64_t)> cell_getter = [val,name,getter](const uint64_t idx) {
+            return flatten_type_to_enum<remove_arg<T>>(val, name+"["+std::to_string(idx)+"]", [getter,idx](const std::any& val) {
+                return std::any_cast<T>(getter(val))[idx];
+            });
+        };
+        return  std::make_unique<ArrayField>(type_i, std::move(cell_getter), val, name, getter,T_STATIC_ARRAY, std_array_size<T>::size, 0);
+    }
+    else if constexpr (is_vector<T>::value) {
+        std::function<uint64_t(const std::any& )> size_getter = [getter](const std::any& obj) {
+            return std::any_cast<T>(getter(obj)).size();
+        };
+        std::function<std::unique_ptr<Field>(const uint64_t)> cell_getter = [val,name,getter](const uint64_t idx) {
+            return flatten_type_to_enum<remove_arg<T>>(val, name+"["+std::to_string(idx)+"]", [getter,idx](const std::any& val) {
+                return std::any_cast<T>(getter(val))[idx];
+            });
+        };
+        return  std::make_unique<DynamicArrayField>(type_i, std::move(cell_getter), std::move(size_getter), val, name, getter,T_OTHER_ARRAY, -1, 0);
+    }
+    else if constexpr (is_list<T>::value) {
+        std::function<uint64_t(const std::any& )> size_getter = [getter](const std::any& obj) {
+            return std::any_cast<T>(getter(obj)).size();
+        };
+        std::function<std::unique_ptr<Field>(const uint64_t)> cell_getter = [val,name,getter](const uint64_t idx) {
+            return flatten_type_to_enum<remove_arg<T>>(val, name+"["+std::to_string(idx)+"]", [getter,idx](const std::any& val) {
+                auto it = std::next(std::any_cast<T>(getter(val)).begin(), idx);
+                // std::advance(it, idx);
+                return *it;
+            });
+        };
+        return  std::make_unique<DynamicArrayField>(type_i, std::move(cell_getter), std::move(size_getter), val, name, getter,T_OTHER_ARRAY, -1, 0);
+    }
     else if constexpr (std::is_array_v<T>) {
+        // UNfortunately, this is not currently supported by the library,
         if constexpr (std::is_bounded_array_v<T>) {
             return  std::make_unique<Field>(type_i, val, name, getter, T_STATIC_ARRAY, std::extent_v<T>, std::remove_reference<decltype( std::declval<T>()[0] )>::type);
         } else {
@@ -81,6 +113,10 @@ template <typename T> std::unique_ptr<Field> flatten_type_to_enum(uint64_t val, 
         return std::make_unique<EnumField>(type_i, 0, name, tmp_vals, (getter), std::move(underlying), T_ENUM);
         // return  nullptr; //EnumField::from_type<T>((getter));
     }
+    else if constexpr (is_tuple<T>::value) {
+        ReflectionManager::reflection_record_create<T>();
+        return  std::make_unique<Field>(type_i, val, name, getter, T_TUPLE, 0, 0);
+    }
     else if constexpr (std::is_union_v<T>) {
         return  std::make_unique<Field>(type_i, val, name, getter,T_UNION, 0, 0);
     }
@@ -89,19 +125,19 @@ template <typename T> std::unique_ptr<Field> flatten_type_to_enum(uint64_t val, 
             std::function<std::any(const std::any&)> neu_getter = [getter](const std::any&val) {
                 return std::any_cast<T>(getter(val)).get();
             };
-            std::unique_ptr<Field> original_field = flatten_type_to_enum<std::remove_extent<T>>(val, name, [neu_getter](const std::any& val) { return *std::any_cast<T*>(neu_getter(val));});
+            std::unique_ptr<Field> original_field = flatten_type_to_enum<typename remove_arg<T>::type>(val, name, [neu_getter](const std::any& val) { return *std::any_cast<T*>(neu_getter(val));});
             return  std::make_unique<PtrField>(type_i, std::move(original_field), val, name, neu_getter,T_POINTER, 0, 0);
         } else if constexpr (is_weak<T>::value) {
             std::function<std::any(const std::any&)> neu_getter = [getter](const std::any&val) {
                 return std::any_cast<T>(getter(val)).get();
             };
-            std::unique_ptr<Field> original_field = flatten_type_to_enum<std::remove_extent<T>>(val, name, [neu_getter](const std::any& val) { return *std::any_cast<T*>(neu_getter(val));});
+            std::unique_ptr<Field> original_field = flatten_type_to_enum<typename remove_arg<T>::type>(val, name, [neu_getter](const std::any& val) { return *std::any_cast<T*>(neu_getter(val));});
             return  std::make_unique<PtrField>(type_i, std::move(original_field), val, name, neu_getter,T_POINTER, 0, 0);
         } else if constexpr (is_unique<T>::value) {
             std::function<std::any(const std::any&)> neu_getter = [getter](const std::any&val) {
                 return std::any_cast<T>(getter(val)).get();
             };
-            std::unique_ptr<Field> original_field = flatten_type_to_enum<std::remove_extent<T>>(val, name, [neu_getter](const std::any& val) { return *std::any_cast<T*>(neu_getter(val));});
+            std::unique_ptr<Field> original_field = flatten_type_to_enum<T::element_type>(val, name, [neu_getter](const std::any& val) { return *std::any_cast<T*>(neu_getter(val));});
             return  std::make_unique<PtrField>(type_i, std::move(original_field), val, name, neu_getter,T_POINTER, 0, 0);
         }
     }

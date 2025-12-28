@@ -48,9 +48,9 @@ public:
     // template<typename _Tp> static ReflectionManagerData* reflection_record_create();
     static Reflection* reflection_from_type_index(const std::type_index& x);
     static Field* field_from_type_index(const std::type_index& x);
-    static Reflection* reflection_from_name(const std::string_view& sv);
+    static Reflection* reflection_from_name(const std::string& sv);
 
-    template<typename _Tp> static Field* field_from_name(const std::string_view& sv) {
+    template<typename _Tp> static Field* field_from_name(const std::string& sv) {
         auto it = name_to_index.find(std::string(sv));
         if (it == name_to_index.end())
             return nullptr;
@@ -70,7 +70,7 @@ template<typename _Tp> ReflectionManagerData* ReflectionManager::reflection_reco
         it->second.name = std::string(field_reflection::type_name<_Tp>);
         assert(!name_to_index.contains(it->second.name));
         name_to_index.emplace(it->second.name, info);
-        it->second.as_field = flatten_type_to_enum<_Tp>(-1, field_reflection::type_name<_Tp>, [](const std::any& x) {return x;});
+        it->second.as_field = flatten_type_to_enum<_Tp>(-1, std::string(field_reflection::type_name<_Tp>), [](const std::any& x) {return x;});
         it->second.reflection = Reflection::from_type<_Tp>(it->second.as_field.get());
     }
     return &it->second;

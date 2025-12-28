@@ -36,14 +36,14 @@ class Reflection;
 
 class   Field {
     uint64_t idx, size_;
-    std::string_view name;
+    std::string name;
     std::function<std::any(const std::any&)> getobj;
     type_cases case_;
     uint64_t bounded_array_size;
     std::type_index val_t;
 
 public:
-    Field(const std::type_index& val_t, uint64_t val, std::string_view name, std::function<std::any(const std::any&)> getter, type_cases cases_ = T_UNEXPECTED, uint64_t bounded_array_size = 0, uint64_t size_ = 0) : val_t{val_t},
+    Field(const std::type_index& val_t, uint64_t val, const std::string& name, std::function<std::any(const std::any&)> getter, type_cases cases_ = T_UNEXPECTED, uint64_t bounded_array_size = 0, uint64_t size_ = 0) : val_t{val_t},
     idx{val}, size_(size_), name{name}, getobj(getter), case_(cases_), bounded_array_size(bounded_array_size) {}
 
     virtual ~Field() = default;

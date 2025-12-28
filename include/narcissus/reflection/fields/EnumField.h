@@ -39,7 +39,7 @@ class EnumField : public Field {
 public:
 
     EnumField(const std::type_index& val_t, uint64_t val,
-        std::string_view name,
+        const std::string& name,
         const std::vector<std::pair<std::string, long long>>& values,
         std::function<std::any(const std::any&)> getter,
         std::function<int64_t(const std::any&)>&& to_underlying,

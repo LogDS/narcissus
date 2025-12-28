@@ -43,6 +43,7 @@ template<typename _Tp>
   struct remove_arg
 { using type = _Tp; };
 
+
 template <typename T, typename = void>
 struct is_streamable : std::false_type {};
 
@@ -54,48 +55,72 @@ struct is_streamable<T, typename std::enable_if<
   >::value
 >::type> : std::true_type {};
 
-template<typename Test, template<typename...> class Ref>
+template<typename Test, template<class...> class Ref>
 struct is_specialization : std::false_type {};
 
-template<template<typename...> class Ref, typename... Args>
+template<template<class...> class Ref, class... Args>
 struct is_specialization<Ref<Args...>, Ref>: std::true_type {};
+
+template<typename>
+struct is_std_array : std::false_type {};
+
+template<typename T,  std::size_t A>
+struct is_std_array<std::array<T,A>> : std::true_type {};
+
+template<typename T,  std::size_t A>
+  struct remove_arg<std::array<T,A>>
+{ using type = T; };
+
+template<typename T>
+  struct std_array_size
+{ uint64_t size = 0; };
+
+template<typename T,  std::size_t A>
+  struct std_array_size<std::array<T,A>>
+{ static constexpr uint64_t size = A; };
 
 template <typename T> using is_vector = is_specialization<T, std::vector>;
 
-template<typename _Tp>
-  struct remove_arg<std::vector<_Tp>>
-{ using type = _Tp; };
+template<typename T>
+  struct remove_arg<std::vector<T>>
+{ using type = T; };
 
 template <typename T> using is_list = is_specialization<T, std::list>;
 
-template<typename _Tp>
-  struct remove_arg<std::list<_Tp>>
-{ using type = _Tp; };
+template<typename T>
+  struct remove_arg<std::list<T>>
+{ using type = T; };
 
 template <typename T> using is_map = is_specialization<T, std::map>;
 template <typename T> using is_unordered_map = is_specialization<T, std::unordered_map>;
 template <typename T> using is_queue = is_specialization<T, std::queue>;
+template <typename T> using is_tuple = is_specialization<T, std::tuple>;
 
-template<typename _Tp>
-  struct remove_arg<std::queue<_Tp>>
-{ using type = _Tp; };
+template<typename T>
+  struct remove_arg<std::queue<T>>
+{ using type = T; };
 
 template <typename T> using is_stack = is_specialization<T, std::stack>;
 
-template<typename _Tp>
-  struct remove_arg<std::stack<_Tp>>
-{ using type = _Tp; };
+template<typename T>
+  struct remove_arg<std::stack<T>>
+{ using type = T; };
 
 template <typename T> using is_deque = is_specialization<T, std::deque>;
 
-template<typename _Tp>
-  struct remove_arg<std::deque<_Tp>>
-{ using type = _Tp; };
+template<typename T>
+  struct remove_arg<std::deque<T>>
+{ using type = T; };
 
 template <typename T> using is_variant = is_specialization<T, std::variant>;
 template <typename T> using is_pair = is_specialization<T, std::pair>;
 template <typename T> using is_tuple = is_specialization<T, std::tuple>;
 template <typename T> using is_shared = is_specialization<T, std::shared_ptr>;
+
+
+template<typename T>
+  struct remove_arg<std::shared_ptr<T>>
+{ using type = T; };
 
 template<typename T>
 struct is_smart_pointer<T, typename std::enable_if<std::is_same<typename std::remove_cv<T>::type, std::shared_ptr<typename T::element_type>>::value>::type>
@@ -103,9 +128,7 @@ struct is_smart_pointer<T, typename std::enable_if<std::is_same<typename std::re
   enum { value = true };
 };
 
-template<typename _Tp>
-  struct remove_arg<std::shared_ptr<_Tp>>
-{ using type = _Tp; };
+
 
 template <typename T> using is_unique = is_specialization<T, std::unique_ptr>;
 
@@ -115,16 +138,12 @@ struct is_smart_pointer<T, typename std::enable_if<std::is_same<typename std::re
     enum { value = true };
 };
 
-template<typename _Tp>
-  struct remove_arg<std::unique_ptr<_Tp>>
-{ using type = _Tp; };
-
+template<typename T>
+  struct remove_arg<std::unique_ptr<T>>
+{ using type = T; };
 
 template <typename T> using is_weak = is_specialization<T, std::weak_ptr>;
 
-template<typename _Tp>
-  struct remove_arg<std::weak_ptr<_Tp>>
-{ using type = _Tp; };
 
 template<typename T>
 struct is_smart_pointer<T, typename std::enable_if<std::is_same<typename std::remove_cv<T>::type, std::weak_ptr<typename T::element_type>>::value>::type>
@@ -132,9 +151,9 @@ struct is_smart_pointer<T, typename std::enable_if<std::is_same<typename std::re
     enum { value = true };
 };
 
-
-
-
+template<typename T>
+  struct remove_arg<std::weak_ptr<T>>
+{ using type = T; };
 
 
 
