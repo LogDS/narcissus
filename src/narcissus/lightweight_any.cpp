@@ -23,11 +23,11 @@
 #include <narcissus/lightweight_any.h>
 
 void * lightweight_any::raw() {
-    return ptr;
+    return is_fundamental ? (void *)&ptr :ptr;
 }
 
 void * lightweight_any::raw() const {
-    return ptr;
+    return is_fundamental ? (void *)&ptr : ptr;
 }
 
 lightweight_any::lightweight_any(): idx(typeid(nullptr_t)), ptr{nullptr} {}

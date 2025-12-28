@@ -34,32 +34,59 @@
 #include "ReflectionManager.h"
 #include <iostream>
 
+
+
 template <typename T> std::unique_ptr<Field> flatten_type_to_enum(uint64_t val, std::string name, std::function<lightweight_any(const lightweight_any&)> getter) {
     std::type_index type_i = std::type_index(typeid(T));
+    bool cond = (name == "bounded_array");
     if constexpr (std::is_same_v<T, std::string>) {
+        if (cond) {
+            std::cout << name << " @ std::string" << std::endl;
+        }
         return std::make_unique<Field>(type_i, val, name, getter, T_STRING, 0, 0);
     }
     if constexpr (std::is_void_v<T>) {
+        if (cond) {
+            std::cout << name << " @ void" << std::endl;
+        }
         return std::make_unique<Field>(type_i, val, name, getter, T_VOID, 0, 0);
     }
     else if constexpr (std::is_null_pointer_v<T>) {
+        if (cond) {
+            std::cout << name << " @ nullptr" << std::endl;
+        }
         return  std::make_unique<Field>(type_i, val, name, getter,T_NULLPTR, 0, 0);
     }
     else if constexpr (std::is_integral_v<T>) {
         if constexpr (std::is_signed_v<T>) {
+            if (cond) {
+                std::cout << name << " @ signed integral" << std::endl;
+            }
             return  std::make_unique<Field>(type_i, val, name, getter,  T_SIGNED_INTEGRAL, 0, sizeof(T));
         } else {
+            if (cond) {
+                std::cout << name << " @ unsigned integral" << std::endl;
+            }
             return  std::make_unique<Field>(type_i, val, name, getter,  T_U_INTEGRAL, 0, sizeof(T));
         }
     }
     else if constexpr (std::is_floating_point_v<T>) {
         if constexpr (std::is_signed_v<T>) {
+            if (cond) {
+                std::cout << name << " @ signed float" << std::endl;
+            }
             return  std::make_unique<Field>(type_i, val, name, getter,  T_SIGNED_FLOAT, 0, sizeof(T));
         } else {
+            if (cond) {
+                std::cout << name << " @ unsigned float" << std::endl;
+            }
             return  std::make_unique<Field>(type_i, val, name, getter,  T_U_FLOAT, 0, sizeof(T));
         }
     }
     else if constexpr (is_std_array<T>::value) {
+        if (cond) {
+            std::cout << name << " @ std::array" << std::endl;
+        }
         std::function<std::unique_ptr<Field>(const uint64_t)> cell_getter = [val,name,getter](const uint64_t idx) {
             std::function<lightweight_any(const lightweight_any&)> intermediate = [getter,idx](const lightweight_any& val) {
                 return getter(val).get<T>()->at(idx);
@@ -69,41 +96,58 @@ template <typename T> std::unique_ptr<Field> flatten_type_to_enum(uint64_t val, 
         return  std::make_unique<ArrayField>(type_i, std::move(cell_getter), val, name, getter,T_STATIC_ARRAY, std_array_size<T>::size, 0);
     }
     else if constexpr (is_vector<T>::value) {
+        if (cond) {
+            std::cout << name << " @ std::vector" << std::endl;
+        }
         std::function<uint64_t(const lightweight_any& )> size_getter = [getter](const lightweight_any& obj) {
             return getter(obj).get<T>()->size();
             // return std::any_cast<T>(getter(obj)).size();
         };
         std::function<std::unique_ptr<Field>(const uint64_t)> cell_getter = [val,name,getter](const uint64_t idx) {
-            return flatten_type_to_enum<remove_arg<T>>(val, name+"["+std::to_string(idx)+"]", [getter,idx](const lightweight_any& val) {
+            std::function<lightweight_any(const lightweight_any&)> intermediate = [getter,idx](const lightweight_any& val) {
                 return getter(val).get<T>()->at(idx);
                 // return std::any_cast<T>(getter(val))[idx];
-            });
+            };
+            return flatten_type_to_enum<remove_arg<T>>(val, name+"["+std::to_string(idx)+"]", intermediate);
         };
         return  std::make_unique<DynamicArrayField>(type_i, std::move(cell_getter), std::move(size_getter), val, name, getter,T_OTHER_ARRAY, -1, 0);
     }
     else if constexpr (is_list<T>::value) {
+        if (cond) {
+            std::cout << name << " @ std::list" << std::endl;
+        }
         std::function<uint64_t(const lightweight_any& )> size_getter = [getter](const lightweight_any& obj) {
             return getter(obj).get<T>()->size();
             // return std::any_cast<T>(getter(obj)).size();
         };
         std::function<std::unique_ptr<Field>(const uint64_t)> cell_getter = [val,name,getter](const uint64_t idx) {
-            return flatten_type_to_enum<remove_arg<T>>(val, name+"["+std::to_string(idx)+"]", [getter,idx](const lightweight_any& val) {
+            std::function<lightweight_any(const lightweight_any&)> intermediate = [getter,idx](const lightweight_any& val) {
                 auto it = std::next(getter(val).get<T>()->begin(), idx);
                 // std::advance(it, idx);
-                return *it;
-            });
+                return &(*it);
+            };
+            return flatten_type_to_enum<remove_arg<T>>(val, name+"["+std::to_string(idx)+"]", intermediate);
         };
         return  std::make_unique<DynamicArrayField>(type_i, std::move(cell_getter), std::move(size_getter), val, name, getter,T_OTHER_ARRAY, -1, 0);
     }
     else if constexpr (std::is_array_v<T>) {
         // UNfortunately, this is not currently supported by the library,
         if constexpr (std::is_bounded_array_v<T>) {
+            if (cond) {
+                std::cout << name << " @ std::array(b)" << std::endl;
+            }
             return  std::make_unique<Field>(type_i, val, name, getter, T_STATIC_ARRAY, std::extent_v<T>, std::remove_reference<decltype( std::declval<T>()[0] )>::type);
         } else {
+            if (cond) {
+                std::cout << name << " @ std::array" << std::endl;
+            }
             return  std::make_unique<Field>(type_i, val, name, getter, T_OTHER_ARRAY, -1, std::remove_reference<decltype( std::declval<T>()[0] )>::type);
         }
     }
     else if constexpr (std::is_enum_v<T>) {
+        if (cond) {
+            std::cout << name << " @ enum" << std::endl;
+        }
         auto color_entries = magic_enum::enum_entries<T>();
         std::vector<std::pair<std::string, long long>> tmp_vals;
         assert(MAGIC_ENUM_RANGE_MIN <= std::to_underlying(std::numeric_limits<T>::min()));
@@ -119,19 +163,28 @@ template <typename T> std::unique_ptr<Field> flatten_type_to_enum(uint64_t val, 
         // return  nullptr; //EnumField::from_type<T>((getter));
     }
     else if constexpr (is_tuple<T>::value) {
+        if (cond) {
+            std::cout << name << " @ std::tuple" << std::endl;
+        }
         ReflectionManager::reflection_record_create<T>();
         return  std::make_unique<Field>(type_i, val, name, getter, T_TUPLE, 0, 0);
     }
     else if constexpr (std::is_union_v<T>) {
+        if (cond) {
+            std::cout << name << " @ union" << std::endl;
+        }
         return  std::make_unique<Field>(type_i, val, name, getter,T_UNION, 0, 0);
     }
     else if constexpr (is_smart_pointer<T>::value) {
+        if (cond) {
+            std::cout << name << " @ std::(shared|unique|weak)_ptr" << std::endl;
+        }
         if constexpr (is_shared<T>::value) {
             std::function<lightweight_any(const lightweight_any&)> neu_getter = [getter](const lightweight_any&val) {
                 return getter(val).get<T>()->get();
             };
             std::unique_ptr<Field> original_field = flatten_type_to_enum<typename remove_arg<T>::type>(val, name, [neu_getter](const lightweight_any& val) {
-                return neu_getter(val).get<T>();
+                return neu_getter(val).get<typename remove_arg<T>::type>();
                 // return *std::any_cast<T*>(neu_getter(val));
             });
             return  std::make_unique<PtrField>(type_i, std::move(original_field), val, name, neu_getter,T_POINTER, 0, 0);
@@ -141,7 +194,7 @@ template <typename T> std::unique_ptr<Field> flatten_type_to_enum(uint64_t val, 
                 // return std::any_cast<T>(getter(val)).get();
             };
             std::unique_ptr<Field> original_field = flatten_type_to_enum<typename remove_arg<T>::type>(val, name, [neu_getter](const lightweight_any& val) {
-                return neu_getter(val).get<T>();
+                return neu_getter(val).get<typename remove_arg<T>::type>();
                 // return *std::any_cast<T*>(neu_getter(val));
             });
             return  std::make_unique<PtrField>(type_i, std::move(original_field), val, name, neu_getter,T_POINTER, 0, 0);
@@ -151,13 +204,16 @@ template <typename T> std::unique_ptr<Field> flatten_type_to_enum(uint64_t val, 
                 // return std::any_cast<T>(getter(val)).get();
             };
             std::unique_ptr<Field> original_field = flatten_type_to_enum<T::element_type>(val, name, [neu_getter](const lightweight_any& val) {
-                return neu_getter(val).get<T>();
+                return neu_getter(val).get<T::element_type>();
                 // return *std::any_cast<T*>(neu_getter(val));
             });
             return  std::make_unique<PtrField>(type_i, std::move(original_field), val, name, neu_getter,T_POINTER, 0, 0);
         }
     }
     else if constexpr (is_variant<T>::value) {
+        if (cond) {
+            std::cout << name << " @ std::variant" << std::endl;
+        }
         ReflectionManager::reflection_record_create<T>();
         std::function<uint64_t(const lightweight_any&)> f = [getter](const lightweight_any& val) {
             return (getter(val)).get<T>()->index();
@@ -165,16 +221,25 @@ template <typename T> std::unique_ptr<Field> flatten_type_to_enum(uint64_t val, 
         return  std::make_unique<VariantField>(type_i, std::move(f), val, name, getter,T_VARIANT, 0, 0);
     }
     else if constexpr (std::is_function_v<T>) {
+        if (cond) {
+            std::cout << name << " @ std::function" << std::endl;
+        }
         return  std::make_unique<Field>(type_i, val, name, getter,  T_FUNCTION, 0, 0);
     }
-    else if constexpr (std::is_pointer_v<T>) {
-        std::unique_ptr<Field> original_field = flatten_type_to_enum<std::remove_pointer_t<T>>(val, name, [getter](const lightweight_any& val) {
-            return getter(val).get<T>();
+    else if constexpr (is_actual_pointer<T>::value) {
+        if (cond) {
+            std::cout << name << " @ std::another_pointer" << std::endl;
+        }
+        std::unique_ptr<Field> original_field = flatten_type_to_enum<typename remove_all_pointers<T>::type>(val, name, [getter](const lightweight_any& val) {
+            return getter(val).get<typename remove_all_pointers<T>::type>();
             // return *std::any_cast<T*>(getter(val));
         });
         return  std::make_unique<PtrField>(type_i, std::move(original_field), val, name, getter,T_POINTER, 0, 0);
     }
     else if constexpr (std::is_class_v<T>) {
+        if (cond) {
+            std::cout << name << " @ clazz" << std::endl;
+        }
         ReflectionManager::reflection_record_create<T>();
         return  std::make_unique<Field>(type_i, val, name, getter,T_CLASS, 0, 0);
     }

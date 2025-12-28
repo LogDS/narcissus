@@ -263,7 +263,10 @@ struct static_for
     std::vector<std::unique_ptr<Field>> tuple_enum() {
         auto result = static_for<T, x+1,to>().tuple_enum();
         std::function<lightweight_any(const lightweight_any&)> f = [](const lightweight_any& val) {
-            return &std::get<x>(*val.get<T>());
+            auto& ref = *val.get<T>();
+            auto& result = std::get<x>(ref);
+            return lightweight_any{&result};
+            // return &std::get<x>(*val.get<T>());
         };
         result.emplace_back(flatten_type_to_enum<std::tuple_element<x,T>>(x, "tuple_field_"+std::to_string(x), (f)));
         return result;
@@ -271,7 +274,10 @@ struct static_for
     std::vector<std::unique_ptr<Field>> variant_enum() {
         auto result = static_for<T, x+1,to>().variant_enum();
         std::function<lightweight_any(const lightweight_any&)> f = [](const lightweight_any& val) {
-            return &std::get<x>(*val.get<T>());
+            auto& ref = *val.get<T>();
+            auto& result = std::get<x>(ref);
+            return lightweight_any{&result};
+            // return &std::get<x>(*val.get<T>());
         };
         result.emplace_back(flatten_type_to_enum<std::variant_alternative_t<x,T>>(x, "variant_tag_"+std::to_string(x), (f)));
         return result;
@@ -279,7 +285,14 @@ struct static_for
     std::vector<std::unique_ptr<Field>> field_enum() {
         auto result = static_for<T, x+1,to>().field_enum();
         std::function<lightweight_any(const lightweight_any&)> f = [](const lightweight_any& val) {
-            return &field_reflection::get_field<x>(*val.get<T>());
+            auto& ref = *val.get<T>();
+            auto& result = field_reflection::get_field<x>(ref);
+            if constexpr (is_actual_pointer<decltype(result)>::value) {
+                return lightweight_any{result};
+            } else {
+                auto* ptr = &result;
+                return lightweight_any{ptr};
+            }
         };
         result.emplace_back(flatten_type_to_enum<field_reflection::field_type<T, x>>(x, std::string(field_reflection::field_name<T, x>), (f)));
         return result;
