@@ -45,10 +45,10 @@ template<typename _Tp>
 
 
 template <typename T, typename = void>
-struct is_streamable : std::false_type {};
+struct is_streamable2 : std::false_type {};
 
 template <typename T>
-struct is_streamable<T, typename std::enable_if<
+struct is_streamable2<T, typename std::enable_if<
   std::is_convertible<
     decltype(std::declval<std::ostream &>() << std::declval<T>()),
     std::ostream &

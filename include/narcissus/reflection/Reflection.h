@@ -62,10 +62,18 @@ public:
 
     template <typename K> K* getField(const std::string& name, const lightweight_any& val);
 
-    const std::string_view getName();
+    std::vector<std::string> keys() const;
+
+    const std::string getName();
 
     const uint64_t getFieldSize() {
         return isEnumerated ? 0 : fields.size();
+    }
+
+    const Field* getField(uint64_t idx) const {
+        if (idx >= fields.size())
+            return nullptr;
+        return fields[idx].get();
     }
 
     const Field* getField(const std::string& name) {
@@ -268,7 +276,7 @@ struct static_for
             return lightweight_any{&result};
             // return &std::get<x>(*val.get<T>());
         };
-        result.emplace_back(flatten_type_to_enum<std::tuple_element<x,T>>(x, "tuple_field_"+std::to_string(x), (f)));
+        result.emplace_back(flatten_type_to_enum<typename std::tuple_element<x,T>::type>(x, "tuple_field_"+std::to_string(x), (f)));
         return result;
     }
     std::vector<std::unique_ptr<Field>> variant_enum() {
@@ -324,7 +332,7 @@ std::unique_ptr<Reflection> Reflection::from_type(Field *field_orig) {
         return (void*)val.raw();
     };
     bool streamable = false;
-    if constexpr (is_streamable<T>::value) {
+    if constexpr (is_streamable2<T>::value) {
         streamable = true;
         f = [](const lightweight_any& x) {
             std::stringstream ss;

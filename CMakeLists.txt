@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 4.0.3)
 project(narcissus)
 Include(FetchContent)
+set(CMAKE_POLICY_VERSION_MINIMUM 3.5)
+#set(BUILD_SHARED_LIBS OFF)
 
 FetchContent_Declare(
         Catch2
@@ -10,20 +12,31 @@ FetchContent_Declare(
 
 FetchContent_MakeAvailable(Catch2)
 
+
+
 set(CMAKE_CXX_STANDARD 26)
 
+
+find_package(Arrow REQUIRED)
+
+
+include_directories(submodule/reflect-cpp-dependencies/yaml/include)
+include_directories(submodule/reflect-cpp-dependencies/json/src)
+include_directories(submodule/reflect-cpp-dependencies/csv/cpp/src)
 include_directories(submodule/reflect-cpp/include)
 add_subdirectory(submodule/reflect-cpp) # Add this project as a subdirectory
+add_subdirectory(submodule/reflect-cpp-dependencies/yaml/)
+add_subdirectory(submodule/reflect-cpp-dependencies/json/)
 
-set(REFLECTCPP_AVRO ON) # Optional
-set(REFLECTCPP_BSON ON) # Optional
-set(REFLECTCPP_CBOR ON) # Optional
-set(REFLECTCPP_FLEXBUFFERS ON) # Optional
-set(REFLECTCPP_MSGPACK ON) # Optional
-set(REFLECTCPP_TOML ON) # Optional
-set(REFLECTCPP_UBJSON ON) # Optional
-set(REFLECTCPP_XML ON) # Optional
-set(REFLECTCPP_YAML ON) # Optional
+#set(REFLECTCPP_AVRO ON) # Optional
+#set(REFLECTCPP_BSON ON) # Optional
+#set(REFLECTCPP_CBOR ON) # Optional
+#set(REFLECTCPP_FLEXBUFFERS ON) # Optional
+#set(REFLECTCPP_MSGPACK ON) # Optional
+#set(REFLECTCPP_TOML ON) # Optional
+#set(REFLECTCPP_UBJSON ON) # Optional
+#set(REFLECTCPP_XML ON) # Optional
+#set(REFLECTCPP_YAML ON) # Optional
 
 include_directories(include)
 include_directories(submodule/field-reflection/include)
@@ -52,7 +65,7 @@ add_library(narcissus         include/narcissus/gsm/gsm.h
         src/narcissus/lightweight_any.cpp)
 
 add_executable(reflection main.cpp)
-target_link_libraries(reflection PRIVATE narcissus) # Link against the library
+target_link_libraries(reflection PRIVATE narcissus Arrow::arrow_static  yaml-cpp yyjson reflectcpp) # Link against the library
 
 add_executable(tests tests/basic_tests.cpp)
-target_link_libraries(tests PRIVATE Catch2::Catch2WithMain narcissus)
+target_link_libraries(tests PRIVATE Catch2::Catch2WithMain narcissus yaml-cpp yyjson reflectcpp)

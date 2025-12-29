@@ -10,3 +10,12 @@
 [submodule "submodule/doctest"]
 	path = submodule/doctest
 	url = https://github.com/doctest/doctest
+[submodule "submodule/reflect-cpp-dependencies/csv"]
+	path = submodule/reflect-cpp-dependencies/csv
+	url = https://github.com/apache/arrow/
+[submodule "submodule/reflect-cpp-dependencies/yaml"]
+	path = submodule/reflect-cpp-dependencies/yaml
+	url = https://github.com/jbeder/yaml-cpp.git
+[submodule "submodule/reflect-cpp-dependencies/json"]
+	path = submodule/reflect-cpp-dependencies/json
+	url = https://github.com/ibireme/yyjson

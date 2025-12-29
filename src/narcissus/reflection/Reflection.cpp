@@ -32,7 +32,16 @@ Reflection::Reflection(Field *self, std::vector<std::unique_ptr<Field>> &&fields
     }
 }
 
-const std::string_view Reflection::getName() {
+std::vector<std::string> Reflection::keys() const {
+    std::vector<std::string> result;
+    result.reserve(fields.size());
+    for (uint64_t i = 0, N = fields.size(); i < N; i++) {
+        result.emplace_back(fields[i]->get_field_name());
+    }
+    return result;
+}
+
+const std::string Reflection::getName() {
     return self->get_field_name();
 }
 

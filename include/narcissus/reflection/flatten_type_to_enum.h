@@ -91,7 +91,7 @@ template <typename T> std::unique_ptr<Field> flatten_type_to_enum(uint64_t val, 
             std::function<lightweight_any(const lightweight_any&)> intermediate = [getter,idx](const lightweight_any& val) {
                 return &getter(val).get<T>()->at(idx);
             };
-            return flatten_type_to_enum<remove_arg<T>>(val, name+"["+std::to_string(idx)+"]", intermediate);
+            return flatten_type_to_enum<typename remove_arg<T>::type>(val, name+"["+std::to_string(idx)+"]", intermediate);
         };
         return  std::make_unique<ArrayField>(type_i, std::move(cell_getter), val, name, getter,T_STATIC_ARRAY, std_array_size<T>::size, 0);
     }
@@ -108,7 +108,7 @@ template <typename T> std::unique_ptr<Field> flatten_type_to_enum(uint64_t val, 
                 return getter(val).get<T>()->at(idx);
                 // return std::any_cast<T>(getter(val))[idx];
             };
-            return flatten_type_to_enum<remove_arg<T>>(val, name+"["+std::to_string(idx)+"]", intermediate);
+            return flatten_type_to_enum<typename remove_arg<T>::type>(val, name+"["+std::to_string(idx)+"]", intermediate);
         };
         return  std::make_unique<DynamicArrayField>(type_i, std::move(cell_getter), std::move(size_getter), val, name, getter,T_OTHER_ARRAY, -1, 0);
     }
@@ -126,7 +126,7 @@ template <typename T> std::unique_ptr<Field> flatten_type_to_enum(uint64_t val, 
                 // std::advance(it, idx);
                 return &(*it);
             };
-            return flatten_type_to_enum<remove_arg<T>>(val, name+"["+std::to_string(idx)+"]", intermediate);
+            return flatten_type_to_enum<typename remove_arg<T>::type>(val, name+"["+std::to_string(idx)+"]", intermediate);
         };
         return  std::make_unique<DynamicArrayField>(type_i, std::move(cell_getter), std::move(size_getter), val, name, getter,T_OTHER_ARRAY, -1, 0);
     }

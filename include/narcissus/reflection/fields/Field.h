@@ -50,6 +50,10 @@ public:
 
     virtual ~Field() = default;
 
+    std::shared_ptr<Field> redoMapping(std::function<lightweight_any(const lightweight_any&)> neu_getobj) const {
+        return std::make_shared<Field>(val_t, idx, name, neu_getobj, case_, bounded_array_size, size_);
+    }
+
     virtual Reflection* asReflection() const;
 
     uint64_t index() const {
@@ -61,7 +65,7 @@ public:
     template <typename K> K* value(const lightweight_any&x) const {
         return any_value(x).get<K>();
     }
-    const std::string_view get_field_name() const {
+    const std::string get_field_name() const {
         return name;
     }
     type_cases type() const {

@@ -38,11 +38,11 @@ class ReflectionManager {
     // std::unordered_map<std::string, std::unique_ptr<Field>> fields;
 
 public:
-    template<typename _Tp> Reflection* reflection_from_type() {
+    template<typename _Tp> static Reflection* reflection_from_type() {
         return reflection_record_create<_Tp>()->reflection.get();
     }
 
-    template<typename _Tp>  Field* field_from_type() {
+    template<typename _Tp> static  Field* field_from_type() {
         return reflection_record_create<_Tp>()->as_field.get();
     }
     // template<typename _Tp> static ReflectionManagerData* reflection_record_create();
