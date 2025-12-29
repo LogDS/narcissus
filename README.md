@@ -1,5 +1,15 @@
+# <img src="narcissus.png" style="height:80px; width: auto;" alt="Logo: Credits to Oliver Robert Fox (2024)" /> Narcissus (N++)
+
+Narcissus is a RTTI and object reflection library, that aims to bring C++ closer to pythonic approaches to accessing objects, as well as exploiting Java-driven concepts for accessing type informaiton, albeit at run-time. This provides a wrapper over the newest C++ standard.
+
+
+## Authors
+
+* Dr Giacomo Bergami (2025 -)
 
 # Use case Example
+
+Within these examples, we are going to use the following data structures.
 
 ```C++
 
