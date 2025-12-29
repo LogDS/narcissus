@@ -26,9 +26,9 @@ VariantField::VariantField(const std::type_index &val_t, std::function<uint64_t(
     const std::string& name, std::function<lightweight_any(const lightweight_any &)> getter, type_cases cases_,
     uint64_t bounded_array_size, uint64_t size_):     Field(val_t, val, name, getter, cases_, bounded_array_size, size_), idx_selector(std::move(idx_selector)) {}
 
-#include <narcissus/reflection/Reflection.h>
+#include <narcissus/reflection/Class.h>
 
 lightweight_any VariantField::any_value(const lightweight_any &x) const {
     auto idx = get_idx(x);
-    return asReflection()->getField("variant_tag_"+std::to_string(idx))->any_value(Field::any_value(x));
+    return getClass()->getField("variant_tag_"+std::to_string(idx))->any_value(Field::any_value(x));
 }

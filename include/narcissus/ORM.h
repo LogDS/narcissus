@@ -23,10 +23,12 @@
 #ifndef NARCISSUS_ORM_H
 #define NARCISSUS_ORM_H
 
-
-#include <rfl/json.hpp>
-// #include <rfl/yaml.hpp>
 #include <rfl.hpp>
+#include <rfl/json.hpp>
+#include <rfl/yaml.hpp>
+#include <rfl/xml.hpp>
+// #include <rfl/csv.hpp>
+// #include <rfl/parsing/tabular/ArrowTypes.hpp>
 
 #include <narcissus/gsm/gsm.h>
 #include <functional>
@@ -34,14 +36,16 @@
 #include <memory>
 
 // #define MAGIC_ENUM_AUTO_IS_FLAGS
-#include <narcissus/reflection/Reflection.h>
+#include <narcissus/reflection/Class.h>
 #include <narcissus/reflection/ReflectionManager.h>
 #include <narcissus/reflection/fields/EnumField.h>
 #include <narcissus/reflection/fields/PtrField.h>
 
 enum SerializationFormat {
     JSON_FORMAT,
-    YAML_FORMAT
+    YAML_FORMAT,
+    XML_FORMAT,
+    // CSV_FORMAT
 };
 
 
@@ -69,8 +73,14 @@ public:
                 rfl::json::write(container, _stream, YYJSON_READ_JSON5);
                 break;
             case YAML_FORMAT:
-                // rfl::yaml::write(container, _stream);
+                rfl::yaml::write(container, _stream);
                 break;
+            case XML_FORMAT:
+                rfl::xml::write<"xml_database">(container, _stream);
+                break;
+            // case CSV_FORMAT:
+                // rfl::csv::write(container, _stream);
+                // break;
         }
     }
 
@@ -80,22 +90,29 @@ public:
      * @param original_value    Object to be serialized and temporarily stored in the cache
      * @return                  Whether the serialization occurred for the first time for the object of interest
      */
-    template<typename T> bool serialize_to_cache(const T& original_value) {
+    template<typename T>
+
+    /*typename std::enable_if<std::is_trivially_copyable_v<T> && std::is_trivial_v<T>,
+                            bool>::type*/
+    bool
+
+     serialize_to_cache(const T& original_value) {
+        // static_assert(std::is_trivial_v<T> == true);
         const T* ptr = &original_value;
         return serialize_to_cache<T>(ptr);
     }
 
 private:
-    void extract_information(Reflection *rt,
+    void extract_information(Class *rt,
                          const lightweight_any& obj,
                          const Field* field_ptr,
                          std::string field_name,
                          std::function<void(const std::string&,const std::variant<std::string,Phi>&)> f);
 
-    bool serialize_to_cache(/*std::uintptr_t address,*/ Reflection *rt, lightweight_any obj);
+    bool serialize_to_cache(/*std::uintptr_t address,*/ Class *rt, lightweight_any obj);
 
     template <typename T>
-    bool serialize_to_cache(const T *ptr, Reflection* rt) {
+    bool serialize_to_cache(const T *ptr, Class* rt) {
         lightweight_any obj{ptr};
         return serialize_to_cache(rt, obj);
     }

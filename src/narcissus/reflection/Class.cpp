@@ -20,10 +20,10 @@
 // Created by gyankos on 27/12/25.
 //
 
-#include <narcissus/reflection/Reflection.h>
+#include <narcissus/reflection/Class.h>
 #include <narcissus/reflection/fields/Field.h>
 
-Reflection::Reflection(Field *self, std::vector<std::unique_ptr<Field>> &&fields, bool is_streamable,
+Class::Class(Field *self, std::vector<std::unique_ptr<Field>> &&fields, bool is_streamable,
     std::function<std::string(const lightweight_any &)> &&string_stream, bool isEnumerated,
     std::function<void *(const lightweight_any &)> &&as_void_pointer): void_ptr{std::move(as_void_pointer)}, streamable{is_streamable},  self{self}, fields{std::move(fields)}, isEnumerated{isEnumerated}, string_stream{std::move(string_stream)} {
     for (uint64_t i = 0; i < this->fields.size(); ++i) {
@@ -32,7 +32,7 @@ Reflection::Reflection(Field *self, std::vector<std::unique_ptr<Field>> &&fields
     }
 }
 
-std::vector<std::string> Reflection::keys() const {
+std::vector<std::string> Class::keys() const {
     std::vector<std::string> result;
     result.reserve(fields.size());
     for (uint64_t i = 0, N = fields.size(); i < N; i++) {
@@ -41,14 +41,38 @@ std::vector<std::string> Reflection::keys() const {
     return result;
 }
 
-const std::string Reflection::getName() {
+const std::string Class::getName() {
     return self->get_field_name();
 }
 
-type_cases Reflection::type() {
+bool Class::hasKey(const std::string &name) const {
+    return field_map.contains(name);
+}
+
+const uint64_t Class::getFieldSize() const {
+    return isEnumerated ? 0 : fields.size();
+}
+
+const Field * Class::getField(uint64_t idx) const {
+    if (idx >= fields.size())
+        return nullptr;
+    return fields[idx].get();
+}
+
+const Field * Class::getField(const std::string &name) const {
+    if (isEnumerated)
+        return nullptr;
+    auto it = field_map.find(name);
+    if (it == field_map.end()) {
+        return nullptr;
+    }
+    return fields[it->second].get();
+}
+
+type_cases Class::type() {
     return self->type();
 }
 
-uint64_t Reflection::size_if_bounded_array() const {
+uint64_t Class::size_if_bounded_array() const {
     return isEnumerated ? 0 : self->size_if_bounded_array();
 }

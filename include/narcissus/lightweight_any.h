@@ -114,6 +114,10 @@ lightweight_any ( T obj) : idx(typeid(typename std::remove_cvref_t<T>)), is_fund
 // #endif
 //     }
 
+    const bool is_null() const {
+        return (ptr == nullptr) || (idx == typeid(std::nullptr_t));
+    }
+
     template<typename T,
           std::enable_if_t<std::is_pointer<std::remove_cvref_t<T>>::value && std::is_same_v<std::remove_cvref_t<T>, typename remove_all_pointers<T>::type>, bool> = false>
     lightweight_any (const T& obj) : idx(typeid(typename std::remove_cvref<T>::type)), ptr{(void*)&obj} {

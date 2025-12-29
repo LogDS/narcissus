@@ -51,8 +51,8 @@ public:
      *
      * @return Provides the reflection for the underlying type
      */
-    Reflection *asReflection() const override {
-        return getOriginalField()->asReflection();
+    Class *getClass() const override {
+        return getOriginalField()->getClass();
     }
 
     /**

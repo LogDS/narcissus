@@ -28,13 +28,13 @@
 
 // #include <narcissus/reflection/Reflection.h>
 
-class Reflection;
+class Class;
 class Field;
 
 struct ReflectionManagerData {
     std::string                 name;
     std::type_index              info;
-    std::unique_ptr<Reflection> reflection ;
+    std::unique_ptr<Class> reflection ;
     std::unique_ptr<Field>      as_field ;
 
     ReflectionManagerData(const std::type_index& x); // : info{x} {}

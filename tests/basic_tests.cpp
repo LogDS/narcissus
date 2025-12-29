@@ -31,7 +31,7 @@
 #include <memory>
 
 // #define MAGIC_ENUM_AUTO_IS_FLAGS
-#include <narcissus/reflection/Reflection.h>
+#include <narcissus/reflection/Class.h>
 #include <narcissus/reflection/ReflectionManager.h>
 #include <narcissus/reflection/fields/EnumField.h>
 
@@ -115,7 +115,7 @@ TEST_CASE( "Factorials are computed", "[factorial]" ) {
     SECTION("testing class struct #1") {
         auto other_field = t->getField("other");
         CHECK(other_field->get_field_name() == "other");
-        auto other_other = other_field->asReflection()->getField("othero");
+        auto other_other = other_field->getClass()->getField("othero");
     }
 
     SECTION("testing pointer #2") {
@@ -123,10 +123,10 @@ TEST_CASE( "Factorials are computed", "[factorial]" ) {
         auto other = t->getField<other_elements>("other", &tv);
         CHECK(other != nullptr);
         CHECK(other == &tv.other);
-        auto ptr = other_field->asReflection();
+        auto ptr = other_field->getClass();
         CHECK(ptr != nullptr);
         CHECK(ptr->getName() == "other_elements");
-        auto other_other = other_field->asReflection()->getField("othero");
+        auto other_other = other_field->getClass()->getField("othero");
         CHECK(other_other->get_field_name() == "othero");
         CHECK(other_other != nullptr);
         auto resulto = other_other->value<other_elements>(&tv.other);
@@ -151,16 +151,16 @@ TEST_CASE( "Factorials are computed", "[factorial]" ) {
     SECTION("tuple") {
         auto tup = t->getField("tup_tup");
         CHECK(tup != nullptr);
-        auto refl = tup->asReflection();
+        auto refl = tup->getClass();
         CHECK(refl->getFieldSize() == 3);
         CHECK(tup->get_field_name() == "tup_tup");
-        auto tup_refl = tup->asReflection()->getField("tuple_field_0")->value<int>(&tv.tup_tup);
+        auto tup_refl = tup->getClass()->getField("tuple_field_0")->value<int>(&tv.tup_tup);
         CHECK(tup_refl == &std::get<0>(tv.tup_tup));
         auto tup_ptr = tup->value<std::tuple<int, double, std::string>>(&tv);
         CHECK(tup_ptr == &tv.tup_tup);
-        auto tup_refl2 = tup->asReflection()->getField("tuple_field_1")->value<double>(&tv.tup_tup);
+        auto tup_refl2 = tup->getClass()->getField("tuple_field_1")->value<double>(&tv.tup_tup);
         CHECK(tup_refl2 == &std::get<1>(tv.tup_tup));
-        auto tup_refl3 = tup->asReflection()->getField("tuple_field_2")->value<std::string>(&tv.tup_tup);
+        auto tup_refl3 = tup->getClass()->getField("tuple_field_2")->value<std::string>(&tv.tup_tup);
         CHECK(tup_refl3 == &std::get<2>(tv.tup_tup));
         auto other_ptr = t->getField<std::tuple<int, double, std::string>>("tup_tup", &tv);
         CHECK(other_ptr == &tv.tup_tup);

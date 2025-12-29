@@ -32,16 +32,16 @@
 #include <memory>
 
 // #define MAGIC_ENUM_AUTO_IS_FLAGS
-#include <narcissus/reflection/Reflection.h>
+#include <narcissus/reflection/Class.h>
 #include <narcissus/reflection/ReflectionManager.h>
 #include <narcissus/reflection/fields/EnumField.h>
 #include <narcissus/reflection/fields/PtrField.h>
 
 struct Pythonize {
     Pythonize();
-    Pythonize(const lightweight_any& object, Reflection* refl, Field* fld);
+    Pythonize(const lightweight_any& object, Class* refl, Field* fld);
 
-    template <typename T> Pythonize(T* object, Reflection* refl) : any{object}, refl{refl}, fld{fld} {
+    template <typename T> Pythonize(T* object, Class* refl) : any{object}, refl{refl}, fld{fld} {
     }
 
     template <typename T> Pythonize(T* object) : any{object}, fld(nullptr) {
@@ -111,7 +111,7 @@ struct Pythonize {
 
 private:
     lightweight_any any;
-    Reflection* refl;
+    Class* refl;
     Field* fld;
 };
 

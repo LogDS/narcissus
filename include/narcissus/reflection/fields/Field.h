@@ -34,7 +34,7 @@
 
 
 
-class Reflection;
+class Class;
 
 class   Field {
     uint64_t idx, size_;
@@ -50,37 +50,62 @@ public:
 
     virtual ~Field() = default;
 
-    std::shared_ptr<Field> redoMapping(std::function<lightweight_any(const lightweight_any&)> neu_getobj) const {
-        return std::make_shared<Field>(val_t, idx, name, neu_getobj, case_, bounded_array_size, size_);
-    }
+    std::shared_ptr<Field> redoMapping(std::function<lightweight_any(const lightweight_any&)> neu_getobj) const;
+    std::shared_ptr<Field> copyAsShared() const;
 
-    std::shared_ptr<Field> copyAsShared() const {
-        return std::make_shared<Field>(val_t, idx, name, getobj, case_, bounded_array_size, size_);
-    }
+    /**
+     *
+     * @return the class-type information associated with the object
+     */
+    virtual Class* getClass() const;
 
-    virtual Reflection* asReflection() const;
+    /**
+     *
+     * @return field number within a class of interest
+     */
+    uint64_t index() const;
 
-    uint64_t index() const {
-        return idx;
-    }
-    virtual lightweight_any any_value(const lightweight_any&x) const {
-        return getobj(x);
-    }
+    /**
+     *
+     * @param x   Type-safe pointer à la std::any of the class containing the field of interest
+     * @return    Type-safe pointer to the object pointed by the field
+     */
+    virtual lightweight_any any_value(const lightweight_any&x) const;
+
+    /**
+     *
+     * @tparam K  Expected C++ type associated with the object
+     * @param x   Type-safe pointer à la std::any of the class containing the field of interest
+     * @return    If the field associated is of the desired type
+     */
     template <typename K> K* value(const lightweight_any&x) const {
         return any_value(x).get<K>();
     }
-    const std::string get_field_name() const {
-        return name;
-    }
-    type_cases type() const {
-        return case_;
-    }
-    uint64_t size_type() const {
-        return size_;
-    }
-    uint64_t size_if_bounded_array() const {
-        return bounded_array_size;
-    }
+
+    /**
+     *
+     * @return Name of the field
+     */
+    const std::string get_field_name() const;
+
+    /**
+     *
+     * @return Basic type associated with the field
+     */
+    type_cases type() const;
+
+    /**
+     *
+     * @return If this points to a native C++ type, it returns the size of the object. This is important to disambiguate
+     * the original type from the sign, real/integer, which is not sufficient to provide full type reconstruction
+     */
+    uint64_t size_type() const;
+
+    /**
+     *
+     * @return If this points to a std::array<T,N>, this returns N
+     */
+    uint64_t size_if_bounded_array() const;
 };
 
 

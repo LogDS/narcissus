@@ -20,7 +20,7 @@
 // Created by gyankos on 27/12/25.
 //
 
-#include <narcissus/reflection/Reflection.h>
+#include <narcissus/reflection/Class.h>
 #include <narcissus/reflection/fields/Field.h>
 #include <narcissus/reflection/ReflectionManagerData.h>
 

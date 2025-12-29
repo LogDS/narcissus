@@ -15,18 +15,22 @@ FetchContent_MakeAvailable(Catch2)
 
 
 set(CMAKE_CXX_STANDARD 26)
+#set(ARROW_DEFINE_OPTIONS OFF)
+#set(ARROW_SIMD_LEVEL NONE)
+#set(ARROW_RUNTIME_SIMD_LEVEL NONE)
+#set(ARROW_BUILD_STATIC ON)
 
 
-find_package(Arrow REQUIRED)
-
-
+include_directories(submodule/reflect-cpp-dependencies/xml/src)
 include_directories(submodule/reflect-cpp-dependencies/yaml/include)
 include_directories(submodule/reflect-cpp-dependencies/json/src)
-include_directories(submodule/reflect-cpp-dependencies/csv/cpp/src)
+#include_directories(submodule/reflect-cpp-dependencies/csv/cpp/src)
 include_directories(submodule/reflect-cpp/include)
 add_subdirectory(submodule/reflect-cpp) # Add this project as a subdirectory
 add_subdirectory(submodule/reflect-cpp-dependencies/yaml/)
 add_subdirectory(submodule/reflect-cpp-dependencies/json/)
+add_subdirectory(submodule/reflect-cpp-dependencies/xml/)
+#add_subdirectory(submodule/reflect-cpp-dependencies/csv/cpp)
 
 #set(REFLECTCPP_AVRO ON) # Optional
 #set(REFLECTCPP_BSON ON) # Optional
@@ -36,7 +40,7 @@ add_subdirectory(submodule/reflect-cpp-dependencies/json/)
 #set(REFLECTCPP_TOML ON) # Optional
 #set(REFLECTCPP_UBJSON ON) # Optional
 #set(REFLECTCPP_XML ON) # Optional
-#set(REFLECTCPP_YAML ON) # Optional
+
 
 include_directories(include)
 include_directories(submodule/field-reflection/include)
@@ -55,8 +59,8 @@ add_library(narcissus         include/narcissus/gsm/gsm.h
         src/narcissus/reflection/fields/PtrField.cpp
         include/narcissus/reflection/fields/EnumField.h
         src/narcissus/reflection/fields/EnumField.cpp
-        include/narcissus/reflection/Reflection.h
-        src/narcissus/reflection/Reflection.cpp
+        include/narcissus/reflection/Class.h
+        src/narcissus/reflection/Class.cpp
         include/narcissus/reflection/flatten_type_to_enum.h
         include/narcissus/reflection/fields/ArrayField.h
         src/narcissus/reflection/fields/VariantField.cpp
@@ -66,9 +70,13 @@ add_library(narcissus         include/narcissus/gsm/gsm.h
         src/narcissus/Pythonize.cpp
         include/narcissus/ORM.h
         src/narcissus/ORM.cpp)
+add_library(serialize_missing ./submodule/reflect-cpp/src/rfl/yaml/Writer.cpp  ./submodule/reflect-cpp/src/rfl/xml/Writer.cpp)
 
-add_executable(reflection main.cpp)
-target_link_libraries(reflection PRIVATE narcissus Arrow::arrow_static  yaml-cpp yyjson reflectcpp) # Link against the library
+add_executable(pythonize examples/pythonize_example.cpp)
+target_link_libraries(pythonize  narcissus   yaml-cpp yyjson pugixml-static serialize_missing reflectcpp) # Link against the library, arrow_static
+
+add_executable(serialize examples/serialization_example.cpp)
+target_link_libraries(serialize  narcissus   yaml-cpp yyjson pugixml-static serialize_missing reflectcpp) # Link against the library, arrow_static
 
 add_executable(tests tests/basic_tests.cpp)
-target_link_libraries(tests PRIVATE Catch2::Catch2WithMain narcissus yaml-cpp yyjson reflectcpp)
+target_link_libraries(tests  Catch2::Catch2WithMain narcissus yaml-cpp yyjson pugixml-static serialize_missing reflectcpp)

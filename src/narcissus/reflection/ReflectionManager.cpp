@@ -29,7 +29,7 @@
 std::unordered_map<std::type_index, ReflectionManagerData> ReflectionManager::reflections_info{};
 std::unordered_map<std::string, std::type_index> ReflectionManager::name_to_index{};
 
-Reflection * ReflectionManager::reflection_from_type_index(const std::type_index &x) {
+Class * ReflectionManager::reflection_from_type_index(const std::type_index &x) {
     auto it = reflections_info.find(x);
     if (it == reflections_info.end())
         return nullptr;
@@ -43,7 +43,7 @@ Field * ReflectionManager::field_from_type_index(const std::type_index &x) {
     return it->second.as_field.get();
 }
 
-Reflection * ReflectionManager::reflection_from_name(const std::string &sv) {
+Class * ReflectionManager::reflection_from_name(const std::string &sv) {
     auto it = name_to_index.find(std::string(sv));
     if (it == name_to_index.end())
         return nullptr;

@@ -22,7 +22,7 @@
 
 #include <narcissus/Pythonize.h>
 
-inline Pythonize::Pythonize(const lightweight_any &object, Reflection *refl, Field *fld): any{object}, refl{refl}, fld{fld} {
+inline Pythonize::Pythonize(const lightweight_any &object, Class *refl, Field *fld): any{object}, refl{refl}, fld{fld} {
 }
 
 std::vector<std::string> Pythonize::keys() const {
@@ -71,13 +71,13 @@ Pythonize Pythonize::operator[](const uint64_t idx) {
             auto ptr = (ArrayField*)fld;
             auto i_field = ptr->at(idx);
             auto val = i_field->any_value(any);
-            return {val, i_field->asReflection(), nullptr};
+            return {val, i_field->getClass(), nullptr};
             // extract_information(i_field->asReflection(), obj, i_field.get(), field_name+"_"+std::to_string(idx), f);
         } else if ((fld->type() == T_OTHER_ARRAY)) {
             auto ptr = (DynamicArrayField*)fld;
             auto i_field = ptr->at(idx);
             auto val = i_field->any_value(any);
-            return {val, i_field->asReflection(), nullptr};
+            return {val, i_field->getClass(), nullptr};
         } else {
             return {};
         }
@@ -143,11 +143,11 @@ Pythonize Pythonize::operator[](const std::string &key) {
                     break;
 
                 case T_ENUM: {
-                    return {field_ptr->any_value(any), field_ptr->asReflection(), field_ptr};
+                    return {field_ptr->any_value(any), field_ptr->getClass(), field_ptr};
                 }
 
                 case T_CLASS: {
-                    auto rt2 = field_ptr->asReflection();
+                    auto rt2 = field_ptr->getClass();
                     auto obj2 = field_ptr->any_value(any);
                     if (obj2.raw() != nullptr) {
                         return {obj2, rt2, nullptr};
@@ -159,7 +159,7 @@ Pythonize Pythonize::operator[](const std::string &key) {
                 case T_POINTER: {
                     if (any.raw() != nullptr) {
                         auto for_ptr = (PtrField*)field_ptr;
-                        return Pythonize{any, for_ptr->getOriginalField()->asReflection(), (Field*)for_ptr->getOriginalField()};
+                        return Pythonize{any, for_ptr->getOriginalField()->getClass(), (Field*)for_ptr->getOriginalField()};
                     } else {
                         return {};
                     }
@@ -172,7 +172,7 @@ Pythonize Pythonize::operator[](const std::string &key) {
                 case T_OTHER_ARRAY:
                 case T_TUPLE: {
                     // auto obj3 = field_ptr->any_value(any);
-                    auto rt2 = field_ptr->asReflection();
+                    auto rt2 = field_ptr->getClass();
                     return Pythonize{any, rt2, field_ptr};
                 }
 
@@ -180,9 +180,9 @@ Pythonize Pythonize::operator[](const std::string &key) {
                     auto for_ptr = (VariantField*)field_ptr;
                     auto tmp3 = for_ptr->any_value(any);
                     auto idx = for_ptr->get_idx(any);
-                    auto refl2 = for_ptr->asReflection();
+                    auto refl2 = for_ptr->getClass();
                     auto var = refl2->getField("variant_tag_"+std::to_string(idx))->redoMapping([](const auto& x) {return x;});
-                    return Pythonize{tmp3, var->asReflection(), var.get()};
+                    return Pythonize{tmp3, var->getClass(), var.get()};
                 }
                 break;
 

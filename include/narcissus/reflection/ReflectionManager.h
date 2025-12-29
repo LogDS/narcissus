@@ -26,7 +26,7 @@
 
 // class Reflection;
 
-#include <narcissus/reflection/Reflection.h>
+#include <narcissus/reflection/Class.h>
 #include <narcissus/reflection/ReflectionManagerData.h>
 #include <unordered_map>
 #include <field_reflection.hpp>
@@ -38,7 +38,7 @@ class ReflectionManager {
     // std::unordered_map<std::string, std::unique_ptr<Field>> fields;
 
 public:
-    template<typename _Tp> static Reflection* reflection_from_type() {
+    template<typename _Tp> static Class* reflection_from_type() {
         return reflection_record_create<_Tp>()->reflection.get();
     }
 
@@ -46,9 +46,9 @@ public:
         return reflection_record_create<_Tp>()->as_field.get();
     }
     // template<typename _Tp> static ReflectionManagerData* reflection_record_create();
-    static Reflection* reflection_from_type_index(const std::type_index& x);
+    static Class* reflection_from_type_index(const std::type_index& x);
     static Field* field_from_type_index(const std::type_index& x);
-    static Reflection* reflection_from_name(const std::string& sv);
+    static Class* reflection_from_name(const std::string& sv);
 
     template<typename _Tp> static Field* field_from_name(const std::string& sv) {
         auto it = name_to_index.find(std::string(sv));
@@ -71,7 +71,7 @@ template<typename _Tp> ReflectionManagerData* ReflectionManager::reflection_reco
         assert(!name_to_index.contains(it->second.name));
         name_to_index.emplace(it->second.name, info);
         it->second.as_field = flatten_type_to_enum<_Tp>(-1, std::string(field_reflection::type_name<_Tp>), [](const lightweight_any& x) {return x;});
-        it->second.reflection = Reflection::from_type<_Tp>(it->second.as_field.get());
+        it->second.reflection = Class::from_type<_Tp>(it->second.as_field.get());
     }
     return &it->second;
 }

@@ -30,9 +30,12 @@ void ORM::deserialize(SerializationFormat format, std::istream &_stream) {
         }
         break;
         case YAML_FORMAT: {
-            // result = rfl::yaml::read<std::vector<GSMObject>>(_stream);
+            result = rfl::yaml::read<std::vector<GSMObject>>(_stream);
         }
         break;
+        case XML_FORMAT: {
+            result = rfl::xml::read<std::vector<GSMObject>>(_stream);
+        }
     }
     if (result.has_value()) {
         auto& current = result.value();
@@ -42,7 +45,7 @@ void ORM::deserialize(SerializationFormat format, std::istream &_stream) {
     }
 }
 
-void ORM::extract_information(Reflection *rt, const lightweight_any &obj, const Field *field_ptr,
+void ORM::extract_information(Class *rt, const lightweight_any &obj, const Field *field_ptr,
     std::string field_name, std::function<void(const std::string &, const std::variant<std::string, Phi> &)> f) {
     // std::unordered_map<std::string, std::vector<std::string>> properties;
     if (field_name.empty()) {
@@ -122,7 +125,7 @@ void ORM::extract_information(Reflection *rt, const lightweight_any &obj, const 
 
         case T_TUPLE: {
             auto obj3 = field_ptr->any_value(obj);
-            auto rt2 = field_ptr->asReflection();
+            auto rt2 = field_ptr->getClass();
             auto N = rt2->getFieldSize();
             for (uint64_t idx = 0; idx < N; idx++) {
                 auto tup_refl = rt2->getField("tuple_field_"+std::to_string(idx));
@@ -133,7 +136,7 @@ void ORM::extract_information(Reflection *rt, const lightweight_any &obj, const 
             break;
         }
         case T_CLASS: {
-            auto rt2 = field_ptr->asReflection();
+            auto rt2 = field_ptr->getClass();
             auto obj2 = field_ptr->any_value(obj);
             if (obj2.raw() != nullptr) {
                 serialize_to_cache(rt2, obj2);
@@ -149,7 +152,7 @@ void ORM::extract_information(Reflection *rt, const lightweight_any &obj, const 
 
         case T_POINTER: {
             auto for_ptr = (PtrField*)field_ptr;
-            extract_information(for_ptr->getOriginalField()->asReflection(), obj, for_ptr->getOriginalField(), "", f);
+            extract_information(for_ptr->getOriginalField()->getClass(), obj, for_ptr->getOriginalField(), "", f);
             return;
             break;
         }
@@ -167,7 +170,7 @@ void ORM::extract_information(Reflection *rt, const lightweight_any &obj, const 
             auto ptr = (ArrayField*)field_ptr;
             for (uint64_t idx = 0, N = ptr->size_if_bounded_array(); idx < N; idx++) {
                 auto i_field = ptr->at(idx);
-                extract_information(i_field->asReflection(), obj, i_field.get(), field_name+"_"+std::to_string(idx), f);
+                extract_information(i_field->getClass(), obj, i_field.get(), field_name+"_"+std::to_string(idx), f);
                 // std::cout << *ptr->at(idx)->value<double>(&tv) << std::endl;
             }
             return;
@@ -179,7 +182,7 @@ void ORM::extract_information(Reflection *rt, const lightweight_any &obj, const 
             auto N = ptr->dynamic_size(obj);
             for (uint64_t idx = 0; idx < N; idx++) {
                 auto i_field = ptr->at(idx);
-                extract_information(i_field->asReflection(), obj, i_field.get(), field_name+"_"+std::to_string(idx), f);
+                extract_information(i_field->getClass(), obj, i_field.get(), field_name+"_"+std::to_string(idx), f);
                 // std::cout << *ptr->at(idx)->value<double>(&tv) << std::endl;
             }
             return;
@@ -191,10 +194,10 @@ void ORM::extract_information(Reflection *rt, const lightweight_any &obj, const 
             auto for_ptr = (VariantField*)field_ptr;
             auto tmp3 = for_ptr->any_value(obj);
             auto idx = for_ptr->get_idx(obj);
-            auto refl2 = for_ptr->asReflection();
+            auto refl2 = for_ptr->getClass();
             auto var = refl2->getField("variant_tag_"+std::to_string(idx))->redoMapping([](const auto& x) {return x;});
             // auto obj2 = var->any_value(obj);<
-            extract_information(var->asReflection(),
+            extract_information(var->getClass(),
                                 tmp3,
                                 var.get(),
                                 field_name+"_"+std::to_string(idx),
@@ -213,7 +216,7 @@ void ORM::extract_information(Reflection *rt, const lightweight_any &obj, const 
     }
 }
 
-bool ORM::serialize_to_cache(Reflection *rt, lightweight_any obj) {
+bool ORM::serialize_to_cache(Class *rt, lightweight_any obj) {
     std::uintptr_t address = (uintptr_t)obj.raw();
     if (serialization.contains(address))
         return false;
