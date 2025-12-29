@@ -159,8 +159,6 @@ lightweight_any ( T obj) : idx(typeid(typename std::remove_cvref_t<T>)), is_fund
     void* raw();
 
     template<typename T> T* get() {
-        // std::type_index ref = typeid(T);
-        // auto ref_name = ref.name();
         assert(typeid(T) == idx);
         return is_fundamental ? (T *)(ptr) :(T*)ptr;
     }

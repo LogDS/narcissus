@@ -85,22 +85,22 @@ int main() {
         ref.value = 2;
     }
 
-    // Pythonize p(&tv);
-    // auto test = p["value"];
-    // std::cout << *test.get<int>() << std::endl;
-    // auto mondo = p["element"];
-    // std::cout << *mondo.get<std::string>() << std::endl;
-    // auto values = p["values"];
-    // std::cout << *values.get<std::string>() << std::endl;
-    // auto capovar = p["var_elem"];
-    // std::cout << *capovar.get<std::string>() << std::endl;
-    // auto bounding = p["bounded_array"];
-    // std::cout << bounding.size() << std::endl;
-    // std::cout << *bounding[9].get<double>() << std::endl;
-    // auto children = p["children"];
-    // auto child_0 = children[0];
-    // std::cout << *child_0["element"].get<std::string>() << std::endl;
-    // exit(3);
+    Pythonize p(&tv);
+    auto test = p["value"];
+    std::cout << *test.get<int>() << std::endl;
+    auto mondo = p["element"];
+    std::cout << *mondo.get<std::string>() << std::endl;
+    auto values = p["values"];
+    std::cout << *values.get<std::string>() << std::endl;
+    auto capovar = p["var_elem"];
+    std::cout << *capovar.get<std::string>() << std::endl;
+    auto bounding = p["bounded_array"];
+    std::cout << bounding.size() << std::endl;
+    std::cout << *bounding[9].get<double>() << std::endl;
+    auto children = p["children"];
+    auto child_0 = children[0];
+    std::cout << *child_0["element"].get<std::string>() << std::endl;
+    exit(3);
 
     // Serialize serializer;
     // serializer.serialize_to_cache(tv);
