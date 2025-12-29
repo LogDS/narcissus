@@ -56,6 +56,24 @@ public:
         return case_names.size();
     }
 
+    /*template <typename T>*/ const uint64_t* toIndexPtr(const lightweight_any& value) const {
+        // static_assert(std::is_enum_v<T>);
+        int64_t val = to_underlying(value);
+        auto it = underlying_type_to_index.find(val);
+        if (it != underlying_type_to_index.end())
+            return &it->second;
+        return nullptr;
+    }
+
+    const long long* toEnumPtr(const lightweight_any& value) const {
+        // static_assert(std::is_enum_v<T>);
+        int64_t val = to_underlying(value);
+        auto it = underlying_type_to_index.find(val);
+        if (it != underlying_type_to_index.end())
+            return &case_to_underlying_type[it->second];
+        return nullptr;
+    }
+
     /*template <typename T>*/ uint64_t toIndex(const lightweight_any& value) const {
         // static_assert(std::is_enum_v<T>);
         int64_t val = to_underlying(value);
@@ -81,6 +99,16 @@ public:
         if (it != underlying_type_to_index.end())
             return std::string(case_names[it->second]);
         return "";
+    }
+
+    const std::string* toStringPtr(const lightweight_any& value) const {
+        // static_assert(std::is_enum_v<T>);
+        // long long val = static_cast<long long>(std::to_underlying(value));
+        int64_t val = *(int64_t*)value.raw();
+        auto it = underlying_type_to_index.find(val);
+        if (it != underlying_type_to_index.end())
+            return &case_names[it->second];
+        return nullptr;
     }
 
     const std::string_view str(uint64_t index) {

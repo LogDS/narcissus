@@ -62,7 +62,10 @@ add_library(narcissus         include/narcissus/gsm/gsm.h
         src/narcissus/reflection/fields/VariantField.cpp
         src/narcissus/reflection/fields/ArrayField.cpp
         include/narcissus/lightweight_any.h
-        src/narcissus/lightweight_any.cpp)
+        src/narcissus/lightweight_any.cpp
+        src/narcissus/Pythonize.cpp
+        include/narcissus/ORM.h
+        src/narcissus/ORM.cpp)
 
 add_executable(reflection main.cpp)
 target_link_libraries(reflection PRIVATE narcissus Arrow::arrow_static  yaml-cpp yyjson reflectcpp) # Link against the library

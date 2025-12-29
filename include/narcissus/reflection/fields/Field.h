@@ -54,6 +54,10 @@ public:
         return std::make_shared<Field>(val_t, idx, name, neu_getobj, case_, bounded_array_size, size_);
     }
 
+    std::shared_ptr<Field> copyAsShared() const {
+        return std::make_shared<Field>(val_t, idx, name, getobj, case_, bounded_array_size, size_);
+    }
+
     virtual Reflection* asReflection() const;
 
     uint64_t index() const {

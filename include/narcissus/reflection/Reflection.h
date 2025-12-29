@@ -66,6 +66,10 @@ public:
 
     const std::string getName();
 
+    bool hasKey(const std::string& name) const {
+        return field_map.contains(name);
+    }
+
     const uint64_t getFieldSize() {
         return isEnumerated ? 0 : fields.size();
     }
