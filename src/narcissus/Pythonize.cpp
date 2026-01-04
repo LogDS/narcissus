@@ -22,6 +22,11 @@
 
 #include <narcissus/Pythonize.h>
 
+
+    inline Pythonize::Pythonize(const lightweight_any &object, Class *refl, std::shared_ptr<Field>&fld): any{object}, refl{refl}, tmp_pointer{fld} {
+}
+
+
 inline Pythonize::Pythonize(const lightweight_any &object, Class *refl, Field *fld): any{object}, refl{refl}, fld{fld} {
 }
 
@@ -34,18 +39,18 @@ bool Pythonize::is_null() const {
 }
 
 uint64_t Pythonize::size() const {
-    if ((fld) && (refl)) {
+    if ((getFld()) && (refl)) {
         if (refl->type() == T_TUPLE) {
             return refl->getFieldSize();
         } else {
             return 0;
         }
-    } else if (fld) {
-        if (fld->type() == T_STATIC_ARRAY) {
-            auto ptr = (ArrayField*)fld;
+    } else if (getFld()) {
+        if (getFld()->type() == T_STATIC_ARRAY) {
+            auto ptr = (ArrayField*)getFld();
             return ptr->size_if_bounded_array();
-        } else if ((fld->type() == T_OTHER_ARRAY)) {
-            auto ptr = (DynamicArrayField*)fld;
+        } else if ((getFld()->type() == T_OTHER_ARRAY)) {
+            auto ptr = (DynamicArrayField*)getFld();
             return ptr->dynamic_size(any);
         } else {
             return 0;
@@ -58,7 +63,7 @@ Pythonize Pythonize::operator[](const uint64_t idx) {
     auto N = size();
     if ((N == 0) || (idx >= N))
         return {};
-    if ((fld) && (refl)) {
+    if ((getFld()) && (refl)) {
         if (refl->type() == T_TUPLE) {
             auto tup_refl = refl->getField("tuple_field_"+std::to_string(idx));
             // auto obj2 = tup_refl->any_value(obj3);
@@ -182,7 +187,7 @@ Pythonize Pythonize::operator[](const std::string &key) {
                     auto idx = for_ptr->get_idx(any);
                     auto refl2 = for_ptr->getClass();
                     auto var = refl2->getField("variant_tag_"+std::to_string(idx))->redoMapping([](const auto& x) {return x;});
-                    return Pythonize{tmp3, var->getClass(), var.get()};
+                    return Pythonize{tmp3, var->getClass(), var};
                 }
                 break;
 

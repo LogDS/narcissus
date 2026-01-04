@@ -39,6 +39,7 @@
 
 struct Pythonize {
     Pythonize();
+    Pythonize(const lightweight_any& object, Class* refl, std::shared_ptr<Field>& fld);
     Pythonize(const lightweight_any& object, Class* refl, Field* fld);
 
     template <typename T> Pythonize(T* object, Class* refl) : any{object}, refl{refl}, fld{fld} {
@@ -110,9 +111,17 @@ struct Pythonize {
     Pythonize operator[](const std::string& key);
 
 private:
+
+    Field* getFld() const {
+        if (tmp_pointer.get())
+            return tmp_pointer.get();
+        return fld;
+    }
+
     lightweight_any any;
     Class* refl;
     Field* fld;
+    std::shared_ptr<Field> tmp_pointer;
 };
 
 /*
