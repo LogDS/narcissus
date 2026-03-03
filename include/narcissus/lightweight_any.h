@@ -31,7 +31,7 @@
 #include "template_typing.h"
 
 
-#define DEBUG
+//#define DEBUG
 
 // template<typename T, typename std::enable_if_t<std::is_fundamental_v<T>>> void*  to_default(T val ) {
 //     uint64_t tmp= *((uint64_t*)(&val));
@@ -40,7 +40,7 @@
 // }
 
 template<typename T> void*  to_default(T enu ) {
-    auto val = std::to_underlying(enu);
+    auto val = static_cast<uint64_t>(enu);
     uint64_t tmp= *((uint64_t*)(&val));
     void* result = (void*)tmp;
     return result;
@@ -57,7 +57,7 @@ lightweight_any ( T obj) : idx(typeid(std::remove_pointer_t<typename std::remove
     }
     template<typename T,
       std::enable_if_t<std::is_fundamental<T>::value && !is_actual_pointer<T>::value && !std::is_reference_v<std::remove_cv_t<T>>, bool> = true>
-lightweight_any ( T obj) : idx(typeid(typename std::remove_cvref_t<T>)), ptr{(void*)((uint64_t*)(&obj))}, is_fundamental{true} {
+lightweight_any ( T obj) : idx(typeid(typename std::remove_cvref_t<T>)), ptr{(void*)(*(uint64_t*)(&obj))}, is_fundamental{true} {
 #ifdef DEBUG
         debug_name = idx.name();
 #endif
@@ -161,6 +161,14 @@ lightweight_any ( T obj) : idx(typeid(typename std::remove_cvref_t<T>)), is_fund
     }
 
     void* raw();
+
+    const bool operator== (const lightweight_any& obj) const {
+        if (idx != obj.idx)
+            return false;
+        if (is_fundamental != obj.is_fundamental)
+            return false;
+        return *((uint64_t*)raw()) == *((uint64_t*)obj.raw());
+    }
 
     template<typename T> T* get() {
         assert(typeid(T) == idx);
