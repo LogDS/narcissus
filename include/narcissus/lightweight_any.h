@@ -25,9 +25,7 @@
 
 #include <typeindex>
 #include <memory>
-#include <cassert>
 #include <utility>
-
 #include "template_typing.h"
 
 
@@ -156,7 +154,9 @@ lightweight_any ( T obj) : idx(typeid(typename std::remove_cvref_t<T>)), is_fund
 #ifdef DEBUG
         auto local_name = typeid(T).name();
 #endif
-        assert(typeid(T) == idx);
+
+        if (typeid(T) != idx)
+            return nullptr;
         return (T*)ptr;
     }
 
@@ -171,7 +171,8 @@ lightweight_any ( T obj) : idx(typeid(typename std::remove_cvref_t<T>)), is_fund
     }
 
     template<typename T> T* get() {
-        assert(typeid(T) == idx);
+        if (typeid(T) != idx)
+            return nullptr;
         return is_fundamental ? (T *)(ptr) :(T*)ptr;
     }
 
