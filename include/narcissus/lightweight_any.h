@@ -154,9 +154,10 @@ lightweight_any ( T obj) : idx(typeid(typename std::remove_cvref_t<T>)), is_fund
 #ifdef DEBUG
         auto local_name = typeid(T).name();
 #endif
-
+#if __cplusplus >= 202302L
         if (typeid(T) != idx)
             return nullptr;
+#endif
         return (T*)ptr;
     }
 
@@ -171,8 +172,10 @@ lightweight_any ( T obj) : idx(typeid(typename std::remove_cvref_t<T>)), is_fund
     }
 
     template<typename T> T* get() {
+#if __cplusplus >= 202302L
         if (typeid(T) != idx)
             return nullptr;
+#endif
         return is_fundamental ? (T *)(ptr) :(T*)ptr;
     }
 
@@ -220,6 +223,6 @@ protected:
     std::string debug_name;
 #endif
     void* ptr;
-};
+} __attribute__((__packed__));
 
 #endif //NARCISSUS_LIGHTWEIGHT_ANY_H
