@@ -155,6 +155,23 @@ template<typename T>
   struct remove_arg<std::weak_ptr<T>>
 { using type = T; };
 
+
+#if __cplusplus <= 201703L
+
+namespace std {
+  template<class T>
+  struct type_identity { using type = T; };
+
+  template <typename T>
+  using remove_cvref_t = typename std::remove_cv<typename std::remove_reference<T>::type>::type;
+
+
+  template <typename T>
+  using remove_cvref = typename std::remove_cv<typename std::remove_reference<T>::type>;
+}
+
+#endif
+
 template<typename T>
 struct remove_all_pointers : std::conditional_t<
     std::is_pointer_v<T>,

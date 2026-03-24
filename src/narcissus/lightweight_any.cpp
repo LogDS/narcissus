@@ -30,4 +30,4 @@ void * lightweight_any::raw() const {
     return is_fundamental ? (void *)&ptr : ptr;
 }
 
-lightweight_any::lightweight_any(): idx(typeid(nullptr_t)), ptr{nullptr} {}
+lightweight_any::lightweight_any(): idx(typeid(std::nullptr_t)), ptr{nullptr} {}

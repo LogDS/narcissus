@@ -154,8 +154,7 @@ lightweight_any ( T obj) : idx(typeid(typename std::remove_cvref_t<T>)), is_fund
 #ifdef DEBUG
         auto local_name = typeid(T).name();
 #endif
-
-        if (typeid(T) != idx)
+        if (std::type_index(typeid(T)) != idx)
             return nullptr;
         return (T*)ptr;
     }
@@ -171,7 +170,7 @@ lightweight_any ( T obj) : idx(typeid(typename std::remove_cvref_t<T>)), is_fund
     }
 
     template<typename T> T* get() {
-        if (typeid(T) != idx)
+        if (std::type_index(typeid(T)) != idx)
             return nullptr;
         return is_fundamental ? (T *)(ptr) :(T*)ptr;
     }
