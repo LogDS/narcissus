@@ -156,20 +156,22 @@ template<typename T>
 { using type = T; };
 
 
-#if __cplusplus <= 201703L
+#if __cplusplus >= 202302L
 
+#else
 namespace std {
   template<class T>
+struct remove_cvref
+  {
+    using type = std::remove_cv_t<std::remove_reference_t<T>>;
+  };
+
+  template< class T >
+using remove_cvref_t = typename remove_cvref<T>::type;
+
+  template<class T>
   struct type_identity { using type = T; };
-
-  template <typename T>
-  using remove_cvref_t = typename std::remove_cv<typename std::remove_reference<T>::type>::type;
-
-
-  template <typename T>
-  using remove_cvref = typename std::remove_cv<typename std::remove_reference<T>::type>;
 }
-
 #endif
 
 template<typename T>

@@ -219,6 +219,6 @@ protected:
     std::string debug_name;
 #endif
     void* ptr;
-};
+} __attribute__((__packed__));
 
 #endif //NARCISSUS_LIGHTWEIGHT_ANY_H
