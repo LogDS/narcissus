@@ -23,10 +23,10 @@
 #ifndef NARCISSUS_LIGHTWEIGHT_ANY_H
 #define NARCISSUS_LIGHTWEIGHT_ANY_H
 
+#include <narcissus/template_typing.h>
 #include <typeindex>
 #include <memory>
 #include <utility>
-#include "template_typing.h"
 
 
 //#define DEBUG
@@ -44,25 +44,24 @@ template<typename T> void*  to_default(T enu ) {
     return result;
 }
 
-
 struct lightweight_any {
     template<typename T,
-  std::enable_if_t<is_actual_pointer<std::remove_cvref_t<T>>::value, bool> = true>
-lightweight_any ( T obj) : idx(typeid(std::remove_pointer_t<typename std::remove_cvref_t<T>>)), ptr{(void*)(obj)}, is_fundamental{false} {
+  std::enable_if_t<is_actual_pointer<remove_cvref_t<T>>::value, bool> = true>
+lightweight_any ( T obj) : idx(typeid(std::remove_pointer_t<remove_cvref_t<T>>)), ptr{(void*)(obj)}, is_fundamental{false} {
 #ifdef DEBUG
         debug_name = idx.name();
 #endif
     }
     template<typename T,
       std::enable_if_t<std::is_fundamental<T>::value && !is_actual_pointer<T>::value && !std::is_reference_v<std::remove_cv_t<T>>, bool> = true>
-lightweight_any ( T obj) : idx(typeid(typename std::remove_cvref_t<T>)), ptr{(void*)(*(uint64_t*)(&obj))}, is_fundamental{true} {
+lightweight_any ( T obj) : idx(typeid(remove_cvref_t<T>)), ptr{(void*)(*(uint64_t*)(&obj))}, is_fundamental{true} {
 #ifdef DEBUG
         debug_name = idx.name();
 #endif
     }
     template<typename T,
   std::enable_if_t<std::is_enum<T>::value && !is_actual_pointer<T>::value, bool> = true>
-lightweight_any ( T obj) : idx(typeid(typename std::remove_cvref_t<T>)), is_fundamental{true} {
+lightweight_any ( T obj) : idx(typeid(remove_cvref_t<T>)), is_fundamental{true} {
         ptr = to_default<T>(obj);
 #ifdef DEBUG
         debug_name = idx.name();
@@ -117,9 +116,9 @@ lightweight_any ( T obj) : idx(typeid(typename std::remove_cvref_t<T>)), is_fund
     }
 
     template<typename T,
-          std::enable_if_t<std::is_pointer<std::remove_cvref_t<T>>::value && std::is_same_v<std::remove_cvref_t<T>, typename remove_all_pointers<T>::type>, bool> = false>
-    lightweight_any (const T& obj) : idx(typeid(typename std::remove_cvref<T>::type)), ptr{(void*)&obj} {
-        std::remove_cvref<T> o;
+          std::enable_if_t<std::is_pointer<remove_cvref_t<T>>::value && std::is_same_v<remove_cvref_t<T>, typename remove_all_pointers<T>::type>, bool> = false>
+    lightweight_any (const T& obj) : idx(typeid(remove_cvref<T>::type)), ptr{(void*)&obj} {
+        remove_cvref<T> o;
 #ifdef DEBUG
         debug_name = idx.name();
 #endif

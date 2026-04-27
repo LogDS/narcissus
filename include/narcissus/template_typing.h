@@ -128,8 +128,6 @@ struct is_smart_pointer<T, typename std::enable_if<std::is_same<typename std::re
   enum { value = true };
 };
 
-
-
 template <typename T> using is_unique = is_specialization<T, std::unique_ptr>;
 
 template<typename T>
@@ -143,7 +141,6 @@ template<typename T>
 { using type = T; };
 
 template <typename T> using is_weak = is_specialization<T, std::weak_ptr>;
-
 
 template<typename T>
 struct is_smart_pointer<T, typename std::enable_if<std::is_same<typename std::remove_cv<T>::type, std::weak_ptr<typename T::element_type>>::value>::type>
@@ -159,7 +156,7 @@ template<typename T>
 #if __cplusplus >= 202302L
 
 #else
-namespace std {
+//namespace std {
   template<class T>
 struct remove_cvref
   {
@@ -167,11 +164,11 @@ struct remove_cvref
   };
 
   template< class T >
-using remove_cvref_t = typename remove_cvref<T>::type;
+using remove_cvref_t = std::remove_cv_t<std::remove_reference_t<T>>;
 
   template<class T>
   struct type_identity { using type = T; };
-}
+//}
 #endif
 
 template<typename T>
@@ -180,7 +177,7 @@ struct remove_all_pointers : std::conditional_t<
     remove_all_pointers<
         std::remove_pointer_t<T>
     >,
-    std::type_identity<T>
+    type_identity<T>
 >
 {};
 
@@ -191,7 +188,7 @@ template<typename T, typename Enable = void>
 struct is_actual_pointer : std::false_type {};
 
 template<typename T>
-struct is_actual_pointer<T, typename std::enable_if<!std::is_same<std::remove_cvref_t<T>, typename remove_all_pointers<std::remove_cvref_t<T>>::type>::value || std::is_pointer<std::remove_cvref_t<T>>::value
+struct is_actual_pointer<T, typename std::enable_if<!std::is_same<remove_cvref_t<T>, typename remove_all_pointers<remove_cvref_t<T>>::type>::value || std::is_pointer<remove_cvref_t<T>>::value
                                                     >::type> : std::true_type {};
 
 // #include <narcissus/reflection/field.h>
