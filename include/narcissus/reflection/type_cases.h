@@ -23,24 +23,24 @@
 #ifndef NARCISSUS_TYPE_CASES_H
 #define NARCISSUS_TYPE_CASES_H
 
-enum type_cases {
-    T_VOID,
-    T_NULLPTR,
-    T_SIGNED_INTEGRAL,
-    T_U_INTEGRAL,
-    T_SIGNED_FLOAT,
-    T_U_FLOAT,
-    T_STATIC_ARRAY,
-    T_OTHER_ARRAY,
-    T_ENUM,
-    T_UNION,
-    T_CLASS,
-    T_FUNCTION,
-    T_POINTER,
-    T_STRING,
-    T_TUPLE,
-    T_VARIANT,
-    T_UNEXPECTED,
+enum type_cases : uint8_t {
+    T_VOID = 1,
+    T_NULLPTR = 2,
+    T_SIGNED_INTEGRAL = 3,
+    T_U_INTEGRAL = 4,
+    T_SIGNED_FLOAT = 5,
+    T_U_FLOAT = 6,
+    T_STATIC_ARRAY = 7,
+    T_OTHER_ARRAY = 8,
+    T_ENUM = 9,
+    T_UNION = 10,
+    T_CLASS = 11,
+    T_FUNCTION = 12,
+    T_POINTER = 13,
+    T_STRING = 14,
+    T_TUPLE = 15,
+    T_VARIANT = 16,
+    T_UNEXPECTED = 0,
 };
 
 #endif //NARCISSUS_TYPE_CASES_H

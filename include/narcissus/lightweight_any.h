@@ -28,15 +28,6 @@
 #include <memory>
 #include <utility>
 
-
-//#define DEBUG
-
-// template<typename T, typename std::enable_if_t<std::is_fundamental_v<T>>> void*  to_default(T val ) {
-//     uint64_t tmp= *((uint64_t*)(&val));
-//     void* result = (void*)tmp;
-//     return result;
-// }
-
 template<typename T> void*  to_default(T enu ) {
     auto val = static_cast<uint64_t>(enu);
     uint64_t tmp= *((uint64_t*)(&val));
@@ -67,21 +58,6 @@ lightweight_any ( T obj) : idx(typeid(remove_cvref_t<T>)), is_fundamental{true} 
         debug_name = idx.name();
 #endif
     }
-//     template<typename T,
-//           std::enable_if_t<is_actual_pointer<T>::value, bool> = false>
-//     lightweight_any ( T* obj) : idx(typeid(std::remove_pointer_t<typename std::remove_cvref_t<T>>)), ptr{(void*)obj} {
-// #ifdef DEBUG
-//         debug_name = idx.name();
-// #endif
-//     }
-
-//     template<typename T,
-//           std::enable_if_t<is_actual_pointer<T>::value, bool> = false>
-//     lightweight_any ( T& obj) : idx(typeid(std::remove_pointer_t<typename std::remove_cvref_t<T>>)), ptr{(void*)&obj} {
-// #ifdef DEBUG
-//         debug_name = idx.name();
-// #endif
-//     }
 
     template<typename T>
     lightweight_any ( std::unique_ptr<T>& obj)  : idx(typeid(T)), ptr{(void*)obj.get()} {
@@ -103,13 +79,6 @@ lightweight_any ( T obj) : idx(typeid(remove_cvref_t<T>)), is_fundamental{true} 
         debug_name = idx.name();
 #endif
     }
-
-//     template<typename T>
-//     lightweight_any (const T* obj) : idx(typeid(typename std::remove_cvref<T>::type)), ptr{(void*)obj} {
-// #ifdef DEBUG
-//         debug_name = idx.name();
-// #endif
-//     }
 
     const bool is_null() const {
         return (ptr == nullptr) || (idx == typeid(std::nullptr_t));
@@ -149,14 +118,14 @@ lightweight_any ( T obj) : idx(typeid(remove_cvref_t<T>)), is_fundamental{true} 
 
     void* raw() const;
 
-    template<typename T> T* get() const {
-#ifdef DEBUG
-        auto local_name = typeid(T).name();
-#endif
-        if (std::type_index(typeid(T)) != idx)
-            return nullptr;
-        return (T*)ptr;
-    }
+//     template<typename T> T* get() const {
+// #ifdef DEBUG
+//         auto local_name = typeid(T).name();
+// #endif
+//         if (std::type_index(typeid(T)) != idx)
+//             return nullptr;
+//         return (T*)ptr;
+//     }
 
     void* raw();
 
@@ -168,48 +137,13 @@ lightweight_any ( T obj) : idx(typeid(remove_cvref_t<T>)), is_fundamental{true} 
         return *((uint64_t*)raw()) == *((uint64_t*)obj.raw());
     }
 
-    template<typename T> T* get() {
-        if (std::type_index(typeid(T)) != idx)
-            return nullptr;
-        return is_fundamental ? (T *)(ptr) :(T*)ptr;
-    }
+    // template<typename T> T* get() {
+    //     if (std::type_index(typeid(T)) != idx)
+    //         return nullptr;
+    //     return is_fundamental ? (T *)(ptr) :(T*)ptr;
+    // }
 
     lightweight_any();
-
-//     lightweight_any(const lightweight_any& x) : idx{x.idx} {
-//         is_fundamental = x.is_fundamental;
-//         ptr = x.ptr;
-// #ifdef DEBUG
-//         debug_name = x.debug_name;
-// #endif
-//     }
-//     lightweight_any(lightweight_any&& x) = delete;
-// //     lightweight_any(lightweight_any&& x) : idx{x.idx} {
-// //         is_fundamental = x.is_fundamental;
-// //         ptr = x.ptr;
-// // #ifdef DEBUG
-// //         debug_name = x.debug_name;
-// // #endif
-// //     }
-//     lightweight_any& operator=(const lightweight_any& x) {
-//         idx = x.idx;
-//         is_fundamental = x.is_fundamental;
-//         ptr = x.ptr;
-// #ifdef DEBUG
-//         debug_name = x.debug_name;
-// #endif
-//         return *this;
-//     }
-//     lightweight_any& operator=(lightweight_any&& x)  = delete;
-// //     lightweight_any& operator=(lightweight_any&& x) {
-// //         idx = x.idx;
-// //         is_fundamental = x.is_fundamental;
-// //         ptr = x.ptr;
-// // #ifdef DEBUG
-// //         debug_name = x.debug_name;
-// // #endif
-// //         return *this;
-// //     }
 
 protected:
     bool is_fundamental = false;
