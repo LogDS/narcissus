@@ -50,41 +50,41 @@ enum type_cases : uint8_t {
 template <typename T> constexpr type_cases getTypeInformation() {
     if constexpr (std::is_same_v<T, std::string>) {
         return type_cases::T_STRING;
-    } else if constexpr (std::is_void_v<T>) {
+    } else if constexpr (std::is_void<T>::value) {
         return type_cases::T_VOID;
-    }if constexpr (std::is_null_pointer_v<T>) {
+    }if constexpr (std::is_null_pointer<T>::value) {
         return type_cases::T_NULLPTR;
-    } else if constexpr (std::is_integral_v<T>) {
-        if constexpr (std::is_signed_v<T>) {
+    } else if constexpr (std::is_integral<T>::value) {
+        if constexpr (std::is_signed<T>::value) {
             return type_cases::T_SIGNED_INTEGRAL;
         } else {
             return type_cases::T_U_INTEGRAL;
         }
-    } else if constexpr (std::is_floating_point_v<T>) {
-        if constexpr (std::is_signed_v<T>) {
+    } else if constexpr (std::is_floating_point<T>::value) {
+        if constexpr (std::is_signed<T>::value) {
             return type_cases::T_SIGNED_FLOAT;
         } else {
             return type_cases::T_U_FLOAT;
         }
-    } else if constexpr (is_std_array<T>::value || std::is_array_v<T>) {
+    } else if constexpr (is_std_array<T>::value || std::is_array<T>::value) {
         return type_cases::T_STATIC_ARRAY;
     } else if constexpr (is_vector<T>::value) {
         return type_cases::T_OTHER_ARRAY;
     } else if constexpr  (is_list<T>::value) {
         return type_cases::T_OTHER_ARRAY;
-    }  else if constexpr (std::is_enum_v<T>) {
+    }  else if constexpr (std::is_enum<T>::value) {
         return type_cases::T_ENUM;
     } else if constexpr (is_tuple<T>::value) {
         return type_cases::T_TUPLE;
-    } else if constexpr (std::is_union_v<T>) {
+    } else if constexpr (std::is_union<T>::value) {
         return type_cases::T_UNION;
     } else if constexpr (is_smart_pointer<T>::value || is_actual_pointer<T>::value) {
         return type_cases::T_POINTER;
     } else if constexpr (is_variant<T>::value) {
         return type_cases::T_VARIANT;
-    } else if constexpr (std::is_function_v<T>) {
+    } else if constexpr (std::is_function<T>::value) {
         return type_cases::T_FUNCTION;
-    } else if constexpr (std::is_class_v<T>) {
+    } else if constexpr (std::is_class<T>::value) {
         return type_cases::T_CLASS;
     } else {
         return type_cases::T_UNEXPECTED;
