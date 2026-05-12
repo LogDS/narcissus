@@ -22,6 +22,7 @@
 
 #ifndef REFLECTION_TEMPLATE_TYPING_H
 #define REFLECTION_TEMPLATE_TYPING_H
+#include <cstdint>
 #include <iosfwd>
 #include <list>
 #include <map>
