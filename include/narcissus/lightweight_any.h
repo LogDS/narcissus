@@ -23,6 +23,7 @@
 #ifndef NARCISSUS_LIGHTWEIGHT_ANY_H
 #define NARCISSUS_LIGHTWEIGHT_ANY_H
 
+#include <cstdint>
 #include <narcissus/template_typing.h>
 #include <typeindex>
 #include <memory>
